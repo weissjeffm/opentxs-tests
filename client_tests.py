@@ -19,6 +19,11 @@ def test_create_pseudonym():
     assert pseudonym_exists(nym_id), "nym_id=%r" % nym_id
 
 
+def test_list_assets():
+    assets = pyopentxs.show_assets()
+    print(assets)
+    assert assets != []
+
 #
 # FIXME:
 # Python can't really capture the hanging test because the whole

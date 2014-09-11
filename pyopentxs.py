@@ -71,6 +71,8 @@ _init_txs()
 _otme = opentxs.OT_ME()
 
 
+### API methods that DONT include server communication
+
 def create_pseudonym(keybits=1024, nym_id_source="", alt_location=""):
     """
     Create a new pseudonym.
@@ -121,7 +123,18 @@ def get_nym_name(nym_id):
 
     return retval
 
+def show_assets():
+    """
+    Returns an array of assets described as tuples(id, name)
+    """
+    asset_count = opentxs.OTAPI_Wrap_GetAssetTypeCount()
+    assets = []
+    for i in range(asset_count):
+        asset_id = opentxs.OTAPI_Wrap_GetAssetType_ID(i)
+        asset_name = opentxs.OTAPI_Wrap_GetAssetType_Name(asset_id)
+        assets.append([asset_id, asset_name])
 
+    return assets
 
 ### API methods that include server communication
 
@@ -136,8 +149,6 @@ def check_server_id(server_id, user_id):
 
     _otme.check_server_id(server_id, user_id)
 
-
-
 def register_nym(server_id, nym_id):
     """
     returns the response message from the server
@@ -149,14 +160,10 @@ def register_nym(server_id, nym_id):
 
     return retval
 
-
-
-
 ### cleanup methods
 
 def exit_handler():
     opentxs.OTAPI_Wrap_AppCleanup()
-
 
 if __name__ == "__main__":
     #get_nym_name("")
