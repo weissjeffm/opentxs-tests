@@ -172,10 +172,7 @@ def check_server_id(server_id, user_id):
     #     case (OTClient::checkServerId)
     # in OTClient::ProcessUserCommand()
 
-    if retval != 1:
-        raise ReturnValueError(retval)
-
-    return True
+    return retval == 1
 
 
 def register_nym(server_id, nym_id):
