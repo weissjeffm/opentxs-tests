@@ -1,4 +1,5 @@
 import os
+import atexit
 
 """
 This file is a small abstraction layer for the SWIG-generated python API
@@ -67,15 +68,55 @@ def create_pseudonym(keybits, nym_id_source, alt_location):
 
     return retval
 
-def verify_message():
-    pass
 
 def check_user(server, nym, target_nym):
+    # TODO
     # see ot wiki "API" / "Write a checkque"
     return _otme.check_user(server, nym, target_nym)
 
 
+def get_nym_ids():
+    """
+    return list of registered nym ids
+    """
+    nym_count = opentxs.OTAPI_Wrap_GetNymCount()
+    nym_ids = []
+    for i in range(nym_count):
+        retval = opentxs.OTAPI_Wrap_GetNym_ID(i)
+        if retval == '':
+            # this is just a guess, a nym_id should never be an empty string
+            raise ReturnValueError(retval)
+        nym_ids.append(retval)
+
+    return nym_ids
+
+
+def get_nym_name(nym_id):
+    """
+    Get the nym name for a given id
+    """
+
+    # FIXME: test and fix crash for empty nym_id
+    # FIXME: discern between "empty name" and "nym not found"
+    retval = opentxs.OTAPI_Wrap_GetNym_Name(nym_id)
+
+    if retval == '':
+        raise ReturnValueError(retval)
+
+    return retval
+
+
+
+
+
+def test_register_nym():
+    pass
+
+
+def exit_handler():
+    opentxs.OTAPI_Wrap_AppCleanup()
+
 
 if __name__ == "__main__":
-    retval = create_pseudonym(2 ** 12, "", "")
-    print(repr(retval), len(retval))
+    #get_nym_name("")
+    pass

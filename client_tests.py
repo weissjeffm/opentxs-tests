@@ -1,10 +1,12 @@
 #import nose
 
+from nose.tools import timed
+
 import pyopentxs
 
-
 def pseudonym_exists(nym_id):
-    pass
+    nym_ids = pyopentxs.get_nym_ids()
+    return nym_id in nym_ids
 
 def test_create_pseudonym():
     keysize = 1024
@@ -16,4 +18,16 @@ def test_create_pseudonym():
             nym_id_source,
             alt_location)
 
-    assert pseudonym_exists(nym_id)
+    assert pseudonym_exists(nym_id), "nym_id=%r" % nym_id
+
+
+#
+# FIXME:
+# Python can't really capture the hanging test because the whole
+# process hangs. This is because opentxs often uses the OT_FAIL which
+# in turn calls std::terminate(). There maybe is a way to capture that
+#
+# @timed(2)
+# def test_capture_crash():
+#     pyopentxs.get_nym_name("")
+
