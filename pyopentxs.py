@@ -84,13 +84,16 @@ _otme = opentxs.OT_ME()
 
 def create_pseudonym(keybits=1024, nym_id_source="", alt_location=""):
     """
-    Create a new pseudonym.
+    Create a new pseudonym in the local wallet.
 
-    Returns pseudonym id?
+    Crashes with OT_FAIL if keysize is invalid.
+
+    Returns generated pseudonym id.
     """
     retval = _otme.create_pseudonym(keybits, nym_id_source, alt_location)
 
     if retval == '':
+        # the pseudonym id should be a 43-byte hash
         raise ReturnValueError(retval)
 
     return retval
@@ -104,7 +107,7 @@ def check_user(server, nym, target_nym):
 
 def get_nym_ids():
     """
-    return list of registered nym ids
+    Return list of locally stored nyms.
     """
     nym_count = opentxs.OTAPI_Wrap_GetNymCount()
     nym_ids = []
@@ -120,7 +123,10 @@ def get_nym_ids():
 
 def get_nym_name(nym_id):
     """
-    Get the nym name for a given id
+    Return the nym name for a given id.
+
+    Attention: If the nym for the id cannot be found, an empty string is
+    returned.
     """
 
     # FIXME: test and fix crash for empty nym_id
@@ -149,19 +155,36 @@ def show_assets():
 
 def check_server_id(server_id, user_id):
     """
-    Check if the server exists, and if the user exists.
+    Returns true if the server is available and the user (same as nym) exists.
     """
 
-    # It is described as a "ping" in the API documentation, however a remote
-    # account on the server is required. The docs also recommend
-    # executing this method first.
+    # The user_id parameters here is the same as nym_id in other api calls
 
-    _otme.check_server_id(server_id, user_id)
+    # The method is described as a "ping" in the API documentation, which should
+    # be called after wallet initialized. However a remote account on the server
+    # is required.
+
+    retval = opentxs.OTAPI_Wrap_checkServerID(server_id, user_id)
+
+    print("(debug) check_server_id retval=", retval)
+
+    # The return value `1` for success is defined by
+    #     case (OTClient::checkServerId)
+    # in OTClient::ProcessUserCommand()
+
+    if retval != 1:
+        raise ReturnValueError(retval)
+
+    return True
+
 
 def register_nym(server_id, nym_id):
     """
-    returns the response message from the server
+    Register nym on server.
+
+    Returns the response message from the server.
     """
+    # TODO: what is the response message?
     retval = _otme.register_nym(server_id, nym_id)
 
     if retval == '':
