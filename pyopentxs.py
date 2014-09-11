@@ -30,13 +30,22 @@ class ProcessUserCommand:
     OTClient::ProcessUserCommand()
     """
 
+    # error, don't send message
     Error = 0               # error, don't send message
 
-    NoMessageSent = -1      # no error, no message sent
+    # no error, no message sent
+    NoMessageSent = -1
 
-    MessageSent = 1         # message is sent, no request number returns > 0 for
-                            # processInbox, containing the number that was there
-                            # before processing -- FIXME unclear
+    # Paraphrasing the documentation
+    # message is sent, no request number returns > 0 for
+    # processInbox, containing the number that was there
+    # before processing -- FIXME unclear
+    MessageSent = 1
+
+    # This is sometimes returned by  OTClient::CalcReturnVal()
+    # Low-level networking error
+    RequestNumberMismatch = -2
+
 
 
 def _remove_pid():
