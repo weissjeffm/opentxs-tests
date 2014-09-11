@@ -123,6 +123,8 @@ def get_nym_name(nym_id):
 
     return retval
 
+### API methods that include server communication
+
 def show_assets():
     """
     Returns an array of assets described as tuples(id, name)
@@ -135,8 +137,6 @@ def show_assets():
         assets.append([asset_id, asset_name])
 
     return assets
-
-### API methods that include server communication
 
 def check_server_id(server_id, user_id):
     """

@@ -19,7 +19,6 @@ def test_create_pseudonym():
 
 def test_list_assets():
     assets = pyopentxs.show_assets()
-    print(assets)
     assert assets != []
 
 #
