@@ -55,7 +55,7 @@ _init_txs()
 _otme = opentxs.OT_ME()
 
 
-def create_pseudonym(keybits, nym_id_source, alt_location):
+def create_pseudonym(keybits=1024, nym_id_source="", alt_location=""):
     """
     Create a new pseudonym.
 
