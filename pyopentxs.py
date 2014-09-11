@@ -123,11 +123,36 @@ def get_nym_name(nym_id):
 
 
 
+### API methods that include server communication
+
+def check_server_id(server_id, user_id):
+    """
+    Check if the server exists, and if the user exists.
+    """
+
+    # It is described as a "ping" in the API documentation, however a remote
+    # account on the server is required. The docs also recommend
+    # executing this method first.
+
+    _otme.check_server_id(server_id, user_id)
 
 
-def test_register_nym():
-    pass
 
+def register_nym(server_id, nym_id):
+    """
+    returns the response message from the server
+    """
+    retval = _otme.register_nym(server_id, nym_id)
+
+    if retval == '':
+        raise ReturnValueError(retval)
+
+    return retval
+
+
+
+
+### cleanup methods
 
 def exit_handler():
     opentxs.OTAPI_Wrap_AppCleanup()
