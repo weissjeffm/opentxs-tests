@@ -23,6 +23,22 @@ class ReturnValueError(BaseException):
 
 
 
+class ProcessUserCommand:
+    """
+    These return values are used by ProcessUserCommand() and bubble up
+    to different higher-level APIs. The return value is documented in
+    OTClient::ProcessUserCommand()
+    """
+
+    Error = 0               # error, don't send message
+
+    NoMessageSent = -1      # no error, no message sent
+
+    MessageSent = 1         # message is sent, no request number returns > 0 for
+                            # processInbox, containing the number that was there
+                            # before processing -- FIXME unclear
+
+
 def _remove_pid():
     """
     Remove the PID file if one exists
