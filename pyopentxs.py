@@ -197,6 +197,16 @@ def register_nym(server_id, nym_id):
 def exit_handler():
     opentxs.OTAPI_Wrap_AppCleanup()
 
+
+### api utils
+
+def _dump_api_methods():
+    for attribute in dir(opentxs):
+        print(attribute)
+
 if __name__ == "__main__":
-    #get_nym_name("")
-    pass
+    import sys
+
+    if '--dump-api' in sys.argv:
+        _dump_api_methods()
+
