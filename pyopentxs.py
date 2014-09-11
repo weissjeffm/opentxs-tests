@@ -105,6 +105,12 @@ def check_user(server, nym, target_nym):
     return _otme.check_user(server, nym, target_nym)
 
 
+
+### Wallet operations
+#
+# These methods (probably) return the data stored in the local wallet
+#
+
 def get_nym_ids():
     """
     Return list of locally stored nyms.
@@ -119,6 +125,20 @@ def get_nym_ids():
         nym_ids.append(retval)
 
     return nym_ids
+
+
+def get_assets():
+    """
+    Returns an array of assets described as tuples (id, name)
+    """
+    asset_count = opentxs.OTAPI_Wrap_GetAssetTypeCount()
+    assets = []
+    for i in range(asset_count):
+        asset_id = opentxs.OTAPI_Wrap_GetAssetType_ID(i)
+        asset_name = opentxs.OTAPI_Wrap_GetAssetType_Name(asset_id)
+        assets.append((asset_id, asset_name))
+
+    return assets
 
 
 def get_nym_name(nym_id):
@@ -138,20 +158,10 @@ def get_nym_name(nym_id):
 
     return retval
 
+
+
+
 ### API methods that include server communication
-
-def show_assets():
-    """
-    Returns an array of assets described as tuples(id, name)
-    """
-    asset_count = opentxs.OTAPI_Wrap_GetAssetTypeCount()
-    assets = []
-    for i in range(asset_count):
-        asset_id = opentxs.OTAPI_Wrap_GetAssetType_ID(i)
-        asset_name = opentxs.OTAPI_Wrap_GetAssetType_Name(asset_id)
-        assets.append([asset_id, asset_name])
-
-    return assets
 
 def check_server_id(server_id, user_id):
     """
