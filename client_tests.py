@@ -2,10 +2,6 @@ from nose.tools import timed
 
 import pyopentxs
 
-def pseudonym_exists(nym_id):
-    nym_ids = pyopentxs.get_nym_ids()
-    return nym_id in nym_ids
-
 def test_create_pseudonym():
     keysize = 1024
     nym_id_source = "" # optional argument
@@ -16,7 +12,9 @@ def test_create_pseudonym():
             nym_id_source,
             alt_location)
 
-    assert pseudonym_exists(nym_id), "nym_id=%r" % nym_id
+    nym_ids = pyopentxs.get_nym_ids()
+
+    assert (nym_id in nym_id), "nym_id=%r" % nym_id
 
 
 def test_list_assets():
