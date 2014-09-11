@@ -1,5 +1,3 @@
-#import nose
-
 from nose.tools import timed
 
 import pyopentxs
