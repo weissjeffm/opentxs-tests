@@ -1,5 +1,7 @@
 import os
 import atexit
+import re
+from bs4 import BeautifulSoup
 
 """
 This file is a small abstraction layer for the SWIG-generated python API
@@ -104,6 +106,13 @@ def check_user(server, nym, target_nym):
     # see ot wiki "API" / "Write a checkque"
     return _otme.check_user(server, nym, target_nym)
 
+def create_account(server_id, nym_id, asset_id):
+    account_xml = _otme.create_asset_acct(server_id, nym_id, asset_id)
+
+    valid_xml = re.sub("<@createAccount", "<createAccount", account_xml)
+    s = BeautifulSoup(valid_xml)
+
+    return s.createaccount['accountid']
 
 
 ### Wallet operations
@@ -158,8 +167,39 @@ def get_nym_name(nym_id):
 
     return retval
 
+def get_account_ids():
+    account_count = opentxs.OTAPI_Wrap_GetAccountCount()
+    accounts = []
+    for i in range(account_count):
+        account_id = opentxs.OTAPI_Wrap_GetAccountWallet_ID(i)
+        accounts.append(account_id)
 
+    return accounts
 
+### API methods that include server communication
+
+def get_servers():
+    server_count = opentxs.OTAPI_Wrap_GetServerCount()
+    servers = []
+    for i in range(server_count):
+        server_id = opentxs.OTAPI_Wrap_GetServer_ID(i)
+        server_name = opentxs.OTAPI_Wrap_GetServer_Name(server_id)
+        servers.append([server_id, server_name])
+
+    return servers
+
+def get_assets():
+    """
+    Returns an array of assets described as tuples(id, name)
+    """
+    asset_count = opentxs.OTAPI_Wrap_GetAssetTypeCount()
+    assets = []
+    for i in range(asset_count):
+        asset_id = opentxs.OTAPI_Wrap_GetAssetType_ID(i)
+        asset_name = opentxs.OTAPI_Wrap_GetAssetType_Name(asset_id)
+        assets.append([asset_id, asset_name])
+
+    return assets
 
 ### API methods that include server communication
 

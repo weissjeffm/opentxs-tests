@@ -16,9 +16,8 @@ def test_create_pseudonym():
 
     assert (nym_id in nym_id), "nym_id=%r" % nym_id
 
-
 def test_list_assets():
-    assets = pyopentxs.show_assets()
+    assets = pyopentxs.get_assets()
     assert assets != []
 
 #

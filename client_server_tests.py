@@ -14,3 +14,19 @@ def test_register_nym():
     # returns server "contract"
     # TODO: maybe perform checks on the returned contract
 
+
+def test_create_account():
+    servers = pyopentxs.get_servers()
+    server_id = servers[0][0]
+
+    nym_id = pyopentxs.create_pseudonym()
+    pyopentxs.register_nym(server_id, nym_id)
+
+    assets = pyopentxs.get_assets()
+    asset_id = assets[0][0]
+
+    account_id = pyopentxs.create_account(server_id, nym_id, asset_id)
+
+    accounts = pyopentxs.get_account_ids()
+
+    assert account_id in accounts
