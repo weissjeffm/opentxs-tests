@@ -1,0 +1,244 @@
+
+
+Welcome to Open Transactions -- 'createmint', version 0.93.0
+
+Now loading the server nym, which will also ask you for a password, to unlock
+its private key. (Default password is "test".)
+Using Wallet: notaryServer.xml
+
+Loading Open Transactions server. File version: 2.0
+ Last Issued Transaction Number: 742
+ Server ID:      r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+ Server User ID: voeqDVAJwDwROywFtg5mEyYpcu2dcPJRLFHYh7tyhqk
+
+Loading cachedKey:
+CmAAAQCAAAD//wAAAAg0FBzSdJCwbAAAABDv+tnq+cJyrZ7GyEVdyBqBAAAAIN5p
+TgvbUWUmfjbHx3oAnSQzUSLi3dl1LeAKIUCAj9EzAAAAEHzM5Ww3hxInuFBLPDV1
+/fk=
+
+MainFile::LoadServerUserAndContract: Loaded server certificate and keys.
+Next, loading Cron...
+
+
+Loading OTCron for ServerID: r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+MainFile::LoadServerUserAndContract: Loading the server contract...
+
+** Main Server Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: game tokens
+ Contract ID: 7f8nlUn795x8931JParRnmKAyw8cegRyBMcFg9FccaF
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: US Dollars
+ Contract ID: EYGad9FjZWgGKeVbgh2FbA0Hf8oP0XlnRyYCsvSIYKL
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: silver grams
+ Contract ID: JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: Bitcoins
+ Contract ID: XU1Gu6sjcLxg260FmRgrSvRz9L0OohXRSEhlkeSd9j2
+** Asset Contract Verified **
+Mint::LoadMint: File does not exist: mints/r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG/7f8nlUn795x8931JParRnmKAyw8cegRyBMcFg9FccaF.4
+
+
+Mint file does not (yet) exist for series 4 and asset type:
+7f8nlUn795x8931JParRnmKAyw8cegRyBMcFg9FccaF
+ Creating......
+
+Successfully created cash reserve account for new mint.
+
+Done.
+
+
+
+Welcome to Open Transactions -- 'createmint', version 0.93.0
+
+Now loading the server nym, which will also ask you for a password, to unlock
+its private key. (Default password is "test".)
+Using Wallet: notaryServer.xml
+
+Loading Open Transactions server. File version: 2.0
+ Last Issued Transaction Number: 742
+ Server ID:      r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+ Server User ID: voeqDVAJwDwROywFtg5mEyYpcu2dcPJRLFHYh7tyhqk
+
+Loading cachedKey:
+CmAAAQCAAAD//wAAAAg0FBzSdJCwbAAAABDv+tnq+cJyrZ7GyEVdyBqBAAAAIN5p
+TgvbUWUmfjbHx3oAnSQzUSLi3dl1LeAKIUCAj9EzAAAAEHzM5Ww3hxInuFBLPDV1
+/fk=
+
+MainFile::LoadServerUserAndContract: Loaded server certificate and keys.
+Next, loading Cron...
+
+
+Loading OTCron for ServerID: r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+MainFile::LoadServerUserAndContract: Loading the server contract...
+
+** Main Server Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: game tokens
+ Contract ID: 7f8nlUn795x8931JParRnmKAyw8cegRyBMcFg9FccaF
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: US Dollars
+ Contract ID: EYGad9FjZWgGKeVbgh2FbA0Hf8oP0XlnRyYCsvSIYKL
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: silver grams
+ Contract ID: JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: Bitcoins
+ Contract ID: XU1Gu6sjcLxg260FmRgrSvRz9L0OohXRSEhlkeSd9j2
+** Asset Contract Verified **
+Mint::LoadMint: File does not exist: mints/r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG/EYGad9FjZWgGKeVbgh2FbA0Hf8oP0XlnRyYCsvSIYKL.4
+
+
+Mint file does not (yet) exist for series 4 and asset type:
+EYGad9FjZWgGKeVbgh2FbA0Hf8oP0XlnRyYCsvSIYKL
+ Creating......
+
+Successfully created cash reserve account for new mint.
+
+Done.
+
+
+
+Welcome to Open Transactions -- 'createmint', version 0.93.0
+
+Now loading the server nym, which will also ask you for a password, to unlock
+its private key. (Default password is "test".)
+Using Wallet: notaryServer.xml
+
+Loading Open Transactions server. File version: 2.0
+ Last Issued Transaction Number: 742
+ Server ID:      r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+ Server User ID: voeqDVAJwDwROywFtg5mEyYpcu2dcPJRLFHYh7tyhqk
+
+Loading cachedKey:
+CmAAAQCAAAD//wAAAAg0FBzSdJCwbAAAABDv+tnq+cJyrZ7GyEVdyBqBAAAAIN5p
+TgvbUWUmfjbHx3oAnSQzUSLi3dl1LeAKIUCAj9EzAAAAEHzM5Ww3hxInuFBLPDV1
+/fk=
+
+MainFile::LoadServerUserAndContract: Loaded server certificate and keys.
+Next, loading Cron...
+
+
+Loading OTCron for ServerID: r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+MainFile::LoadServerUserAndContract: Loading the server contract...
+
+** Main Server Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: game tokens
+ Contract ID: 7f8nlUn795x8931JParRnmKAyw8cegRyBMcFg9FccaF
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: US Dollars
+ Contract ID: EYGad9FjZWgGKeVbgh2FbA0Hf8oP0XlnRyYCsvSIYKL
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: silver grams
+ Contract ID: JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: Bitcoins
+ Contract ID: XU1Gu6sjcLxg260FmRgrSvRz9L0OohXRSEhlkeSd9j2
+** Asset Contract Verified **
+Mint::LoadMint: File does not exist: mints/r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG/JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q.4
+
+
+Mint file does not (yet) exist for series 4 and asset type:
+JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q
+ Creating......
+
+Successfully created cash reserve account for new mint.
+
+Done.
+
+
+
+Welcome to Open Transactions -- 'createmint', version 0.93.0
+
+Now loading the server nym, which will also ask you for a password, to unlock
+its private key. (Default password is "test".)
+Using Wallet: notaryServer.xml
+
+Loading Open Transactions server. File version: 2.0
+ Last Issued Transaction Number: 742
+ Server ID:      r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+ Server User ID: voeqDVAJwDwROywFtg5mEyYpcu2dcPJRLFHYh7tyhqk
+
+Loading cachedKey:
+CmAAAQCAAAD//wAAAAg0FBzSdJCwbAAAABDv+tnq+cJyrZ7GyEVdyBqBAAAAIN5p
+TgvbUWUmfjbHx3oAnSQzUSLi3dl1LeAKIUCAj9EzAAAAEHzM5Ww3hxInuFBLPDV1
+/fk=
+
+MainFile::LoadServerUserAndContract: Loaded server certificate and keys.
+Next, loading Cron...
+
+
+Loading OTCron for ServerID: r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG
+MainFile::LoadServerUserAndContract: Loading the server contract...
+
+** Main Server Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: game tokens
+ Contract ID: 7f8nlUn795x8931JParRnmKAyw8cegRyBMcFg9FccaF
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: US Dollars
+ Contract ID: EYGad9FjZWgGKeVbgh2FbA0Hf8oP0XlnRyYCsvSIYKL
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: silver grams
+ Contract ID: JY7kEFnm2c50CGNphdpgnlVo2hOZuLrBua5cFqWWR9Q
+** Asset Contract Verified **
+
+
+****Asset Contract**** (server listing)
+ Name: Bitcoins
+ Contract ID: XU1Gu6sjcLxg260FmRgrSvRz9L0OohXRSEhlkeSd9j2
+** Asset Contract Verified **
+Mint::LoadMint: File does not exist: mints/r1fUoHwJOWCuK3WBAAySjmKYqsG6G2TYIxdqY6YNuuG/XU1Gu6sjcLxg260FmRgrSvRz9L0OohXRSEhlkeSd9j2.4
+
+
+Mint file does not (yet) exist for series 4 and asset type:
+XU1Gu6sjcLxg260FmRgrSvRz9L0OohXRSEhlkeSd9j2
+ Creating......
+
+Successfully created cash reserve account for new mint.
+
+Done.
+
