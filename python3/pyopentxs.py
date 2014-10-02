@@ -1,8 +1,9 @@
 import os
-import atexit
 import re
+import io
+import shutil
 from bs4 import BeautifulSoup
-
+from contextlib import closing
 """
 This file is a small abstraction layer for the SWIG-generated python API
 and does the required initialization on import.
@@ -22,7 +23,6 @@ class ReturnValueError(BaseException):
 
     def __str__(self):
         return "API function has returned error value %r" % self.return_value
-
 
 
 class ProcessUserCommand:
@@ -49,7 +49,6 @@ class ProcessUserCommand:
     RequestNumberMismatch = -2
 
 
-
 def _remove_pid():
     """
     Remove the PID file if one exists
@@ -64,25 +63,30 @@ def _remove_pid():
         os.remove(pid_file)
 
 
+def decode(stream):
+    ''', and return as string'''
+    with closing(stream):
+        decoded = opentxs.OTAPI_Wrap_Decode(stream.read(), True)
+    return decoded
 
-def _init_txs():
+config_dir = os.environ['HOME'] + "/.ot/"
+
+
+def init():
     """
     Initialize the OTAPI in order to get a working state
     """
     # This should only be done once per process.
+    _remove_pid()
     opentxs.OTAPI_Wrap_AppInit()
     opentxs.OTAPI_Wrap_LoadWallet()
 
-
-_remove_pid()
-
-_init_txs()
 
 # OTME = OpenTransactions MadeEasy
 _otme = opentxs.OT_ME()
 
 
-### API methods that DONT include server communication
+# API methods that DONT include server communication
 
 def create_pseudonym(keybits=1024, nym_id_source="", alt_location=""):
     """
@@ -106,6 +110,7 @@ def check_user(server, nym, target_nym):
     # see ot wiki "API" / "Write a checkque"
     return _otme.check_user(server, nym, target_nym)
 
+
 def create_account(server_id, nym_id, asset_id):
     account_xml = _otme.create_asset_acct(server_id, nym_id, asset_id)
 
@@ -115,10 +120,18 @@ def create_account(server_id, nym_id, asset_id):
     return s.createaccount['accountid']
 
 
-### Wallet operations
+def add_server(nym_id, contract):
+    '''Create a server contract with the given nym_id and the contract
+    contents.'''
+    contract_id = opentxs.OTAPI_Wrap_CreateServerContract(nym_id, contract)
+    assert(len(contract_id) > 0)
+    return contract_id
+
+# Wallet operations
 #
 # These methods (probably) return the data stored in the local wallet
 #
+
 
 def get_nym_ids():
     """
@@ -134,20 +147,6 @@ def get_nym_ids():
         nym_ids.append(retval)
 
     return nym_ids
-
-
-def get_assets():
-    """
-    Returns an array of assets described as tuples (id, name)
-    """
-    asset_count = opentxs.OTAPI_Wrap_GetAssetTypeCount()
-    assets = []
-    for i in range(asset_count):
-        asset_id = opentxs.OTAPI_Wrap_GetAssetType_ID(i)
-        asset_name = opentxs.OTAPI_Wrap_GetAssetType_Name(asset_id)
-        assets.append((asset_id, asset_name))
-
-    return assets
 
 
 def get_nym_name(nym_id):
@@ -167,6 +166,7 @@ def get_nym_name(nym_id):
 
     return retval
 
+
 def get_account_ids():
     account_count = opentxs.OTAPI_Wrap_GetAccountCount()
     accounts = []
@@ -176,7 +176,51 @@ def get_account_ids():
 
     return accounts
 
-### API methods that include server communication
+# API methods that include server communication
+
+
+def first_server_id():
+    return get_servers()[0][0]
+
+
+def setup_server(contract_stream):
+    '''
+    Helps create a clean config dir starting from scratch.
+    '''
+    server_nym = create_pseudonym()
+    with closing(contract_stream):
+        server_contract = add_server(server_nym, contract_stream.read())
+    walletxml = decode(open(config_dir + "client_data/wallet.xml"))
+    cached_key = BeautifulSoup(walletxml).wallet.cachedkey.string.strip()
+    signed_contract_file = config_dir + "client_data/contracts/" + server_contract
+    with closing(open(signed_contract_file)) as f:
+        signed_contract = f.read()
+    decoded_signed_contract = decode(io.StringIO(signed_contract))
+
+    # copy the credentials to the server
+    server_data_dir = config_dir + "server_data/"
+    if not os.path.exists(server_data_dir):
+        os.mkdir(server_data_dir)
+    shutil.copytree(config_dir + "client_data/credentials", server_data_dir + "credentials")
+    # remove the client-side data
+    shutil.rmtree(config_dir + "client_data")
+
+
+    # since we still don't have programmatic access, just print the info
+    # for easy copying
+    print(server_contract)
+    print(server_nym)
+    print(cached_key + "\n~")
+    print(decoded_signed_contract + "\n~")
+
+    # next line crashes the process
+    # opentxs.MainFile(None).CreateMainFile(signed_contract, server_contract, "", server_nym,
+    # cached_key)
+    # add the server contract on the client side
+    opentxs.OTAPI_Wrap_AddServerContract(decoded_signed_contract)
+
+    return decoded_signed_contract
+
 
 def get_servers():
     server_count = opentxs.OTAPI_Wrap_GetServerCount()
@@ -187,6 +231,7 @@ def get_servers():
         servers.append([server_id, server_name])
 
     return servers
+
 
 def get_assets():
     """
@@ -201,7 +246,8 @@ def get_assets():
 
     return assets
 
-### API methods that include server communication
+# API methods that include server communication
+
 
 def check_server_id(server_id, user_id):
     """
@@ -232,28 +278,28 @@ def register_nym(server_id, nym_id):
     Returns the response message from the server.
     """
     # TODO: what is the response message?
-    retval = _otme.register_nym(server_id, nym_id)
+    message = _otme.register_nym(server_id, nym_id)
 
-    if retval == '':
-        raise ReturnValueError(retval)
+    if message == '':
+        raise ReturnValueError(message)
+    else:
+        assert(opentxs.OTAPI_Wrap_Message_GetSuccess(message) == 1)
+    return message
 
-    return retval
 
-### cleanup methods
+def issue_asset_type(server_id, nym_id, contract_stream):
+    '''Issues a new asset type on the given server and nym.  contract
+    should be a string with the contract contents.
 
-def exit_handler():
+    '''
+    # first sign the contract
+    asset_id = opentxs.OTAPI_Wrap_CreateAssetContract(nym_id, contract_stream.read())
+    assert asset_id
+    signed_contract = opentxs.OTAPI_Wrap_getContract(server_id, nym_id, asset_id)
+    return _otme.issue_asset_type(server_id, nym_id, signed_contract)
+
+
+# cleanup methods
+
+def cleanup():
     opentxs.OTAPI_Wrap_AppCleanup()
-
-
-### api utils
-
-def _dump_api_methods():
-    for attribute in dir(opentxs):
-        print(attribute)
-
-if __name__ == "__main__":
-    import sys
-
-    if '--dump-api' in sys.argv:
-        _dump_api_methods()
-

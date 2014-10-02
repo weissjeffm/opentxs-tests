@@ -1,0 +1,17 @@
+import pyopentxs
+import pytest
+
+pytest.mark.usefixtures("setup_ot_config")
+
+
+def test_create_pseudonym():
+    nym_id = pyopentxs.create_pseudonym(1024, "", "")
+    nym_ids = pyopentxs.get_nym_ids()
+
+    assert (nym_id in nym_ids), "nym_id=%r" % nym_id
+
+
+def test_list_servers():
+    servers = pyopentxs.get_servers()
+    assert servers != []
+    assert servers[0][1] == "Transactions.com"  # from localhost.xml server contract
