@@ -96,7 +96,7 @@ def create_pseudonym(keybits=1024, nym_id_source="", alt_location=""):
 
     Returns generated pseudonym id.
     """
-    retval = _otme.create_pseudonym(keybits, nym_id_source, alt_location)
+    retval = _otme.create_nym(keybits, nym_id_source, alt_location)
 
     if retval == '':
         # the pseudonym id should be a 43-byte hash
