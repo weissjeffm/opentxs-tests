@@ -307,6 +307,16 @@ class issue_asset_type:
 	    self.issuer_account_id = opentxs.OTAPI_Wrap_Message_GetNewIssuerAcctID(message)
 
 
+def write_cheque(server_id, cheque_amount, valid_from, valid_to, sender_acct_id, sender_user_id, cheque_memo, recipient_user_id):
+    """
+    Prepare cheque
+    valid_from and valid_to are number of seconds since 1.1.1970
+    """
+    _otme.make_sure_enough_trans_nums(10, server_id, sender_user_id)
+    return opentxs.OTAPI_Wrap_WriteCheque(server_id, cheque_amount, valid_from, valid_to, sender_acct_id, sender_user_id, cheque_memo, recipient_user_id)
+
+def deposit_cheque(server_id, nym_id, acct_id, cheque):
+    return _otme.deposit_cheque(server_id, nym_id, acct_id, cheque)
 
 # cleanup methods
 
