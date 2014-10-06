@@ -271,6 +271,14 @@ def check_server_id(server_id, user_id):
     return retval == 1
 
 
+def is_message_success(message):
+    '''Returns true if message has success=true'''
+    if message == '':
+        raise ReturnValueError(message)
+    else:
+        return opentxs.OTAPI_Wrap_Message_GetSuccess(message) == 1
+
+
 def register_nym(server_id, nym_id):
     """
     Register nym on server.
@@ -279,11 +287,7 @@ def register_nym(server_id, nym_id):
     """
     # TODO: what is the response message?
     message = _otme.register_nym(server_id, nym_id)
-
-    if message == '':
-        raise ReturnValueError(message)
-    else:
-        assert(opentxs.OTAPI_Wrap_Message_GetSuccess(message) == 1)
+    assert is_message_success(message)
     return message
 
 
@@ -297,7 +301,9 @@ def issue_asset_type(server_id, nym_id, contract_stream):
     asset_id = opentxs.OTAPI_Wrap_CreateAssetContract(nym_id, contract_stream.read())
     assert asset_id
     signed_contract = opentxs.OTAPI_Wrap_GetAssetType_Contract(asset_id)
-    return _otme.issue_asset_type(server_id, nym_id, signed_contract)
+    message = _otme.issue_asset_type(server_id, nym_id, signed_contract)
+    assert is_message_success(message)
+    return asset_id
 
 
 # cleanup methods
