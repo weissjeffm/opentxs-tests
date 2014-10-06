@@ -291,11 +291,12 @@ def issue_asset_type(server_id, nym_id, contract_stream):
     '''Issues a new asset type on the given server and nym.  contract
     should be a string with the contract contents.
 
+    nymid must be registered.
     '''
     # first sign the contract
     asset_id = opentxs.OTAPI_Wrap_CreateAssetContract(nym_id, contract_stream.read())
     assert asset_id
-    signed_contract = opentxs.OTAPI_Wrap_getContract(server_id, nym_id, asset_id)
+    signed_contract = opentxs.OTAPI_Wrap_GetAssetType_Contract(asset_id)
     return _otme.issue_asset_type(server_id, nym_id, signed_contract)
 
 
