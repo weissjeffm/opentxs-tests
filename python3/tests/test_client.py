@@ -4,8 +4,8 @@ import pytest
 pytest.mark.usefixtures("setup_ot_config")
 
 
-def test_create_pseudonym():
-    nym_id = pyopentxs.create_pseudonym(1024, "", "")
+def test_create_nym():
+    nym_id = pyopentxs.create_nym(1024, "", "")
     nym_ids = pyopentxs.get_nym_ids()
 
     assert (nym_id in nym_ids), "nym_id=%r" % nym_id

@@ -1,12 +1,12 @@
 import pyopentxs
 
 # def test_check_server_id():
-#     nym_id = pyopentxs.create_pseudonym()
+#     nym_id = pyopentxs.create_nym()
 #     assert pyopentxs.check_server_id(get_server_id(), nym_id)
 
 
 def test_register_nym():
-    nym_id = pyopentxs.create_pseudonym()
+    nym_id = pyopentxs.create_nym()
     pyopentxs.register_nym(pyopentxs.first_server_id(), nym_id)
 
 
@@ -17,7 +17,7 @@ def test_create_asset():
 def test_create_account():
     server_id = pyopentxs.first_server_id()
 
-    nym_id = pyopentxs.create_pseudonym()
+    nym_id = pyopentxs.create_nym()
     pyopentxs.register_nym(server_id, nym_id)
 
     assets = pyopentxs.get_assets()

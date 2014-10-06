@@ -88,18 +88,18 @@ _otme = opentxs.OT_ME()
 
 # API methods that DONT include server communication
 
-def create_pseudonym(keybits=1024, nym_id_source="", alt_location=""):
+def create_nym(keybits=1024, nym_id_source="", alt_location=""):
     """
-    Create a new pseudonym in the local wallet.
+    Create a new nym in the local wallet.
 
     Crashes with OT_FAIL if keysize is invalid.
 
-    Returns generated pseudonym id.
+    Returns generated nym id.
     """
     retval = _otme.create_nym(keybits, nym_id_source, alt_location)
 
     if retval == '':
-        # the pseudonym id should be a 43-byte hash
+        # the nym id should be a 43-byte hash
         raise ReturnValueError(retval)
 
     return retval
@@ -187,7 +187,7 @@ def setup_server(contract_stream):
     '''
     Helps create a clean config dir starting from scratch.
     '''
-    server_nym = create_pseudonym()
+    server_nym = create_nym()
     with closing(contract_stream):
         server_contract = add_server(server_nym, contract_stream.read())
     walletxml = decode(open(config_dir + "client_data/wallet.xml"))
