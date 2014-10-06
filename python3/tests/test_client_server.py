@@ -1,7 +1,6 @@
 import pyopentxs
+from datetime import datetime, timedelta
 
-import pytest
-import time
 # def test_check_server_id():
 #     nym_id = pyopentxs.create_nym()
 #     assert pyopentxs.check_server_id(get_server_id(), nym_id)
@@ -24,6 +23,7 @@ def test_issue_asset_contract():
     server_id = pyopentxs.first_server_id()
     pyopentxs.issue_asset_type(server_id, nym_id, open(btc_contract_file))
 
+
 def test_issue_write_cheque():
     server_id = pyopentxs.first_server_id()
 
@@ -35,10 +35,12 @@ def test_issue_write_cheque():
     account_id = pyopentxs.create_account(server_id, nym_id, asset.asset_id)
     target_account_id = pyopentxs.create_account(server_id, nym_target_id, asset.asset_id)
 
-    now = int(time.time())
-    cheque = pyopentxs.write_cheque(server_id, 10, now-1, now+1000, asset.issuer_account_id, nym_id, "memo", nym_target_id)
+    now = datetime.now()
+    cheque = pyopentxs.Cheque(server_id, 10, now + timedelta(0, -1), now + timedelta(0, 1000),
+                              asset.issuer_account_id, nym_id, "memo", nym_target_id)
 
-    deposit = pyopentxs.deposit_cheque(server_id, nym_target_id, target_account_id, cheque)
+    cheque.write()
+    deposit = cheque.deposit(nym_target_id, target_account_id)
     assert pyopentxs.is_message_success(deposit)
 
 def test_create_account():

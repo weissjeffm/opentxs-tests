@@ -2,8 +2,11 @@ import os
 import re
 import io
 import shutil
+import datetime
+#import ctypes
 from bs4 import BeautifulSoup
 from contextlib import closing
+
 """
 This file is a small abstraction layer for the SWIG-generated python API
 and does the required initialization on import.
@@ -307,18 +310,47 @@ class issue_asset_type:
 	    self.issuer_account_id = opentxs.OTAPI_Wrap_Message_GetNewIssuerAcctID(message)
 
 
-def write_cheque(server_id, cheque_amount, valid_from, valid_to, sender_acct_id, sender_user_id, cheque_memo, recipient_user_id):
-    """
-    Prepare cheque
-    valid_from and valid_to are number of seconds since 1.1.1970
-    """
-    _otme.make_sure_enough_trans_nums(10, server_id, sender_user_id)
-    return opentxs.OTAPI_Wrap_WriteCheque(server_id, cheque_amount, valid_from, valid_to, sender_acct_id, sender_user_id, cheque_memo, recipient_user_id)
 
-def deposit_cheque(server_id, nym_id, acct_id, cheque):
-    return _otme.deposit_cheque(server_id, nym_id, acct_id, cheque)
+class Cheque(object):
+    def __init__(self, server_id, cheque_amount, valid_from, valid_to, sender_acct_id,
+                 sender_user_id, cheque_memo, recipient_user_id):
+        self.server_id = server_id
+        self.cheque_amount = cheque_amount
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+        self.sender_acct_id = sender_acct_id
+        self.sender_user_id = sender_user_id
+        self.cheque_memo = cheque_memo
+        self.recipient_user_id = recipient_user_id
+        self._body = None  # prepared cheque returned by server
+
+    def write(self):
+        """
+        Prepare cheque
+        valid_from and valid_to are datetime objects
+        """
+        _otme.make_sure_enough_trans_nums(10, self.server_id, self.sender_user_id)
+
+        secs_since_1970 = lambda d: int((d - datetime.datetime(1970, 1, 1)).total_seconds())
+        self._body = opentxs.OTAPI_Wrap_WriteCheque(
+            self.server_id,
+            self.cheque_amount,
+            secs_since_1970(self.valid_from),
+            secs_since_1970(self.valid_to),
+            self.sender_acct_id,
+            self.sender_user_id,
+            self.cheque_memo,
+            self.recipient_user_id)
+        return self._body
+
+    def deposit(self):
+        '''Deposit the cheque, getting a written copy from the server first if we don't have one.'''
+        if not self._body:
+            self.write()
+        return _otme.deposit_cheque(self.server_id, self.nym_id, self.acct_id, self._body)
 
 # cleanup methods
+
 
 def cleanup():
     opentxs.OTAPI_Wrap_AppCleanup()
