@@ -343,11 +343,14 @@ class Cheque(object):
             self.recipient_user_id)
         return self._body
 
-    def deposit(self):
+    def deposit(self, depositor_nym_id, depositor_account_id):
         '''Deposit the cheque, getting a written copy from the server first if we don't have one.'''
         if not self._body:
             self.write()
-        return _otme.deposit_cheque(self.server_id, self.nym_id, self.acct_id, self._body)
+        result = _otme.deposit_cheque(self.server_id, depositor_nym_id,
+                                    depositor_account_id, self._body)
+        print("Deposit: %s" % result)
+        return result
 
 # cleanup methods
 
