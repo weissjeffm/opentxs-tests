@@ -35,6 +35,11 @@ def test_issue_write_cheque():
     account_id = pyopentxs.create_account(server_id, nym_id, asset.asset_id)
     target_account_id = pyopentxs.create_account(server_id, nym_target_id, asset.asset_id)
 
+    # check that both account has zero balance
+    assert 0 == pyopentxs.get_account_balance(server_id, nym_id, asset.issuer_account_id)
+    assert 0 == pyopentxs.get_account_balance(server_id, nym_target_id, target_account_id)
+
+    # create and deposit check
     now = datetime.utcnow()
     cheque = pyopentxs.Cheque(server_id, 10, now + timedelta(0, -1), now + timedelta(0, 1000),
                               asset.issuer_account_id, nym_id, "memo", nym_target_id)
@@ -42,6 +47,10 @@ def test_issue_write_cheque():
     cheque.write()
     deposit = cheque.deposit(nym_target_id, target_account_id)
     assert pyopentxs.is_message_success(deposit)
+
+    # check that balance is changed
+    assert -10 == pyopentxs.get_account_balance(server_id, nym_id, asset.issuer_account_id)
+    assert 10 == pyopentxs.get_account_balance(server_id, nym_target_id, target_account_id)
 
 def test_create_account():
     server_id = pyopentxs.first_server_id()
