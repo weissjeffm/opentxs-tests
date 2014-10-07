@@ -35,7 +35,7 @@ def test_issue_write_cheque():
     account_id = pyopentxs.create_account(server_id, nym_id, asset.asset_id)
     target_account_id = pyopentxs.create_account(server_id, nym_target_id, asset.asset_id)
 
-    now = datetime.now()
+    now = datetime.utcnow()
     cheque = pyopentxs.Cheque(server_id, 10, now + timedelta(0, -1), now + timedelta(0, 1000),
                               asset.issuer_account_id, nym_id, "memo", nym_target_id)
 
