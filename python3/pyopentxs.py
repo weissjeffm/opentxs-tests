@@ -2,8 +2,11 @@ import os
 import re
 import io
 import shutil
+import datetime
+#import ctypes
 from bs4 import BeautifulSoup
 from contextlib import closing
+
 """
 This file is a small abstraction layer for the SWIG-generated python API
 and does the required initialization on import.
@@ -291,6 +294,11 @@ def register_nym(server_id, nym_id):
     return message
 
 
+class Asset(object):
+    def __init__(self, asset_id, issuer_account_id):
+        self.asset_id = asset_id
+        self.issuer_account_id = issuer_account_id
+
 def issue_asset_type(server_id, nym_id, contract_stream):
     '''Issues a new asset type on the given server and nym.  contract
     should be a string with the contract contents.
@@ -303,10 +311,55 @@ def issue_asset_type(server_id, nym_id, contract_stream):
     signed_contract = opentxs.OTAPI_Wrap_GetAssetType_Contract(asset_id)
     message = _otme.issue_asset_type(server_id, nym_id, signed_contract)
     assert is_message_success(message)
-    return asset_id
+    issuer_account_id = opentxs.OTAPI_Wrap_Message_GetNewIssuerAcctID(message)
+    return Asset(asset_id, issuer_account_id)
 
+
+
+
+class Cheque(object):
+    def __init__(self, server_id, cheque_amount, valid_from, valid_to, sender_acct_id,
+                 sender_user_id, cheque_memo, recipient_user_id):
+        self.server_id = server_id
+        self.cheque_amount = cheque_amount
+        self.valid_from = valid_from
+        self.valid_to = valid_to
+        self.sender_acct_id = sender_acct_id
+        self.sender_user_id = sender_user_id
+        self.cheque_memo = cheque_memo
+        self.recipient_user_id = recipient_user_id
+        self._body = None  # prepared cheque returned by server
+
+    def write(self):
+        """
+        Prepare cheque
+        valid_from and valid_to are datetime objects
+        """
+        _otme.make_sure_enough_trans_nums(10, self.server_id, self.sender_user_id)
+
+        secs_since_1970 = lambda d: int((d - datetime.datetime(1970, 1, 1)).total_seconds())
+        self._body = opentxs.OTAPI_Wrap_WriteCheque(
+            self.server_id,
+            self.cheque_amount,
+            secs_since_1970(self.valid_from),
+            secs_since_1970(self.valid_to),
+            self.sender_acct_id,
+            self.sender_user_id,
+            self.cheque_memo,
+            self.recipient_user_id)
+        return self._body
+
+    def deposit(self, depositor_nym_id, depositor_account_id):
+        '''Deposit the cheque, getting a written copy from the server first if we don't have one.'''
+        if not self._body:
+            self.write()
+        result = _otme.deposit_cheque(self.server_id, depositor_nym_id,
+                                    depositor_account_id, self._body)
+        print("Deposit: %s" % result)
+        return result
 
 # cleanup methods
+
 
 def cleanup():
     opentxs.OTAPI_Wrap_AppCleanup()
