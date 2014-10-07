@@ -8,7 +8,8 @@ import pytest
 
 def clean_ot_config():
     # copy the clean data directory
-    shutil.rmtree(pyopentxs.config_dir)
+    if os.path.exists(pyopentxs.config_dir):
+        shutil.rmtree(pyopentxs.config_dir)
     shutil.copytree("../ot-clean-data/.ot", pyopentxs.config_dir)
 
 
