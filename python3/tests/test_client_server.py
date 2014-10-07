@@ -26,8 +26,8 @@ def test_issue_asset_contract():
 def test_create_account():
     server_id = pyopentxs.first_server_id()
     nym_id = register_new_nym()
-    asset_id = pyopentxs.issue_asset_type(server_id, nym_id, open(btc_contract_file))
-    account_id = pyopentxs.create_account(server_id, nym_id, asset_id)
+    asset = pyopentxs.issue_asset_type(server_id, nym_id, open(btc_contract_file))
+    account_id = pyopentxs.create_account(server_id, nym_id, asset.asset_id)
 
     accounts = pyopentxs.get_account_ids()
 
