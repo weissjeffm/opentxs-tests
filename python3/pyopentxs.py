@@ -358,6 +358,15 @@ class Cheque(object):
         print("Deposit: %s" % result)
         return result
 
+def get_account_balance(server_id, nym_id, account_id):
+    """
+    refresh local account files from server and return account balance
+    """
+    res = opentxs.OTAPI_Wrap_getAccountFiles(server_id, nym_id, account_id)
+    if res < 0:
+        raise ReturnValueError(res)
+    return opentxs.OTAPI_Wrap_GetAccountWallet_Balance(account_id)
+
 # cleanup methods
 
 
