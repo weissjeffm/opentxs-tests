@@ -33,5 +33,5 @@ def restart_opentxs_notary():
 if __name__ == "__main__":
     restart_opentxs_notary()
     pyopentxs.init()
-    pytest.main()
+    pytest.main("--junitxml=junit-report.xml")
     pyopentxs.cleanup()
