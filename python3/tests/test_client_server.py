@@ -121,10 +121,8 @@ def prepared_accounts(request):
 
 class TestGenericTransfer:
     @pytest.mark.parametrize("amount,should_pass", [
-    # TODO: this crash in voucher
-    #    (-10, False),
-    # TODO: this crash
-    #    (0, True),
+        pytest.mark.skipif(True, (-10, False), reason="crash in voucher"),
+        pytest.mark.skipif(True, (0, True), reason="crash"),
         (10, True),
         (200, False),
     ])
