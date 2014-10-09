@@ -85,7 +85,6 @@ def transfer_transfer(self, amount, source=None, target=None, valid=True):
     #accept all inbox items in target account
     assert pyopentxs._otme.accept_inbox_items(self.target.account_id, 0, "")
 
-#@pytest.fixture(params=(transfer_cheque, transfer_voucher, transfer_transfer))
 @pytest.fixture(params=(transfer_transfer, transfer_cheque, transfer_voucher), ids=("transfer_transfer", "transfer_cheque", "transfer_voucher"))
 def transfer_generic(request):
     return request.param
