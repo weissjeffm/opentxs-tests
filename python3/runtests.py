@@ -1,9 +1,10 @@
-import pyopentxs
 import shutil
 import psutil
 import os
+import sys
 import time
 import pytest
+import pyopentxs
 
 
 def clean_ot_config():
@@ -33,5 +34,5 @@ def restart_opentxs_notary():
 if __name__ == "__main__":
     restart_opentxs_notary()
     pyopentxs.init()
-    pytest.main("--junitxml=junit-report.xml")
+    pytest.main(sys.argv[1:])
     pyopentxs.cleanup()
