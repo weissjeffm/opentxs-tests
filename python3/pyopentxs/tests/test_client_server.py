@@ -36,7 +36,7 @@ def test_create_account():
 @singledispatch
 def transfer(item, source_acct, target_acct):
     '''generic function to transfer something from source to target. '''
-    raise Exception("Don't know how to transfer {}'".format(item))
+    raise NotImplementedError("Don't know how to transfer {}'".format(item))
 
 
 @transfer.method(int)
@@ -117,13 +117,12 @@ def prepared_accounts(request):
 
 
 class TestGenericTransfer:
-
     def pytest_generate_tests(self, metafunc):
         transfer_amount_data = [
-            # (-10, False),
+            (-10, False),
             (10, True),
             (200, False),
-            # (0, True)
+            (0, False)
         ]
         instrument_data = [new_cheque,
                            new_voucher,
@@ -131,7 +130,12 @@ class TestGenericTransfer:
         argvalues = []
         for t in transfer_amount_data:
             for i in instrument_data:
-                argvalues.append(t + (i,))
+                if i == new_transfer and t[0] < 0 or i == new_cheque and t[0] == 0:
+                    row = pytest.mark.skipif(True,
+                                             reason="https://github.com/Open-Transactions/opentxs/issues/317")(t + (i,))
+                else:
+                    row = (t + (i,))
+                argvalues.append(row)
         metafunc.parametrize("amount,should_pass,instrument_constructor", argvalues=argvalues)
 
     def test_simple_transfer(self, prepared_accounts, amount, should_pass, instrument_constructor):
