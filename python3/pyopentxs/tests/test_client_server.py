@@ -86,7 +86,7 @@ class TransferAccounts:
         assert target == self.target.balance()
 
 
-def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000):
+def new_cheque(source, target, amount, source_nym=None, valid_from=-10000, valid_to=10000):
     now = datetime.utcnow()
     return instrument.Cheque(
         source.server_id,
@@ -94,15 +94,15 @@ def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000):
         now + timedelta(0, valid_from),
         now + timedelta(0, valid_to),
         source,
-        source.nym,
+        source_nym or source.nym,
         "test cheque!",
         target.nym
     )
 
 
-def new_voucher(source, target, amount):
+def new_voucher(source, target, amount, source_nym=None):
     return instrument.Voucher(
-        source.server_id, amount, source, source.nym, "test cheque!", target.nym)
+        source.server_id, amount, source, source_nym or source.nym, "test cheque!", target.nym)
 
 
 def new_transfer(source, target, amount):
@@ -131,8 +131,9 @@ class TestGenericTransfer:
         for t in transfer_amount_data:
             for i in instrument_data:
                 if i == new_transfer and t[0] < 0 or i == new_cheque and t[0] == 0:
-                    row = pytest.mark.skipif(True,
-                                             reason="https://github.com/Open-Transactions/opentxs/issues/317")(t + (i,))
+                    row = pytest.mark.skipif(
+                        True,
+                        reason="https://github.com/Open-Transactions/opentxs/issues/317")(t + (i,))
                 else:
                     row = (t + (i,))
                 argvalues.append(row)
@@ -147,6 +148,18 @@ class TestGenericTransfer:
             prepared_accounts.assert_balances(-100, 100 - amount, amount)
         else:
             prepared_accounts.assert_balances(-100, 100, 0)
+
+
+@pytest.mark.parametrize("instrument_constructor", [(new_cheque), (new_voucher)])
+def test_not_account_owner(prepared_accounts, instrument_constructor):
+    '''Test that we get a graceful failure when we try to deposit an
+       instrument for an account we don't own'''
+
+    instrument = instrument_constructor(
+        prepared_accounts.source, prepared_accounts.target, 50,
+        source_nym=prepared_accounts.target.nym)
+    with error.expected(ReturnValueError):
+        transfer(instrument, prepared_accounts.source, prepared_accounts.target)
 
 
 class TestChequeTransfer:
