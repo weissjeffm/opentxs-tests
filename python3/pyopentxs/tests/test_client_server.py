@@ -81,9 +81,8 @@ class TransferAccounts:
         return self
 
     def assert_balances(self, issuer, source, target):
-        assert issuer == self.issuer.balance()
-        assert source == self.source.balance()
-        assert target == self.target.balance()
+        assert((issuer, source, target) == (self.issuer, self.source, self.target),
+               "Issuer/source/target balances do not match.")
 
 
 def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000, source_nym=None):
@@ -150,7 +149,7 @@ class TestGenericTransfer:
             prepared_accounts.assert_balances(-100, 100, 0)
 
 
-@pytest.mark.parametrize("instrument_constructor", [(new_cheque), (new_voucher)])
+@pytest.mark.parametrize("instrument_constructor", [new_cheque, new_voucher])
 def test_not_account_owner(prepared_accounts, instrument_constructor):
     '''Test that we get a graceful failure when we try to deposit an
        instrument for an account we don't own'''
@@ -160,6 +159,28 @@ def test_not_account_owner(prepared_accounts, instrument_constructor):
         source_nym=prepared_accounts.target.nym)
     with error.expected(ReturnValueError):
         transfer(instrument, prepared_accounts.source, prepared_accounts.target)
+
+
+@pytest.mark.parametrize("instrument_constructor",
+                         [new_cheque,
+
+                          pytest.mark.skipif(
+                              True,
+                              reason="https://github.com/Open-Transactions/opentxs/issues/324")
+                          ((new_voucher,)),
+
+                          new_transfer])
+def test_wrong_asset_type(instrument_constructor):
+    '''Try to transfer eg a cheque from one asset account to another of a
+       different type. Should fail'''
+    ta_asset1 = TransferAccounts().initial_balance()
+    ta_asset2 = TransferAccounts().initial_balance()
+    source = ta_asset1.source
+    target = ta_asset2.target
+    instrument = instrument_constructor(source, target, 50)
+    with error.expected(ReturnValueError):
+        transfer(instrument, source, target)
+    ta_asset2.assert_balances(-100, 100, 0)
 
 
 class TestChequeTransfer:
