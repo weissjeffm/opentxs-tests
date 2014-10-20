@@ -86,7 +86,7 @@ class TransferAccounts:
         assert target == self.target.balance()
 
 
-def new_cheque(source, target, amount, source_nym=None, valid_from=-10000, valid_to=10000):
+def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000, source_nym=None):
     now = datetime.utcnow()
     return instrument.Cheque(
         source.server_id,
