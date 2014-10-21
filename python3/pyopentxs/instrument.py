@@ -1,6 +1,7 @@
 from pyopentxs import ReturnValueError, is_message_success, otme
 import opentxs
 from datetime import datetime
+from multimethods import singledispatch
 
 
 class Cheque:
@@ -51,6 +52,19 @@ class Cheque:
         # otme.accept_inbox_items(depositor_account._id, 0, "")
         return result
 
+    def cancel(self):
+        outpayments_count = opentxs.OTAPI_Wrap_GetNym_OutpaymentsCount(self.sender_account.nym._id)
+        for i in range(outpayments_count):
+            body = opentxs.OTAPI_Wrap_GetNym_OutpaymentsContentsByIndex(
+                self.sender_nym._id, i)
+            if body == self._body:
+                # found it, now cancel it.
+                result = otme.cancel_outgoing_payments(
+                    self.sender_nym._id, self.sender_account._id, str(i))
+                assert result, "Unable to cancel cheque {}".format(self)
+                return
+        raise IndexError("Cheque {} not found in outpayments, can't cancel".format(self))
+
 
 class Voucher:
     def __init__(self, server_id, amount, sender_account, sender_nym, memo, recipient_nym):
@@ -86,6 +100,19 @@ class Voucher:
                                       self._body)
         return deposit
 
+    def cancel(self):
+        outpayments_count = opentxs.OTAPI_Wrap_GetNym_OutpaymentsCount(self.sender_account.nym._id)
+        for i in range(outpayments_count):
+            body = opentxs.OTAPI_Wrap_GetNym_OutpaymentsContentsByIndex(
+                self.sender_nym._id, i)
+            if body == self._body:
+                # found it, now cancel it.
+                result = otme.cancel_outgoing_payments(
+                    self.sender_nym._id, self.sender_account._id, str(i))
+                assert result, "Unable to cancel voucher {}".format(self)
+                return
+        raise IndexError("Voucher {} not found in {} outpayments, can't cancel".format(self, outpayments_count))
+
 
 def send_transfer(server_id, acct_from, acct_to, note, amount):
     print("transferring {} from {} to {} on {}".format(amount, acct_from, acct_to, server_id))
@@ -95,3 +122,40 @@ def send_transfer(server_id, acct_from, acct_to, note, amount):
     # accept all inbox items in target account
     assert otme.accept_inbox_items(acct_to._id, 0, "")
     return message
+
+
+@singledispatch
+def write(item):
+    item.write()
+
+
+@write.method(Voucher)
+def write_voucher(v):
+    v.withdraw()
+
+
+@singledispatch
+def transfer(item, source_acct, target_acct):
+    '''generic function to transfer something from source to target. '''
+    raise NotImplementedError("Don't know how to transfer {}'".format(item))
+
+
+@transfer.method(int)
+def transfer_int(amount, source_acct, target_acct):
+    '''Send amount via direct transfer'''
+    return send_transfer(
+        source_acct.server_id, source_acct, target_acct, "withdraw", amount)
+
+
+@transfer.method(Cheque)
+def transfer_cheque(cheque, source_acct, target_acct):
+    '''Transfer funds by writing and depositing a cheque'''
+    cheque.write()
+    return cheque.deposit(target_acct.nym, target_acct)
+
+
+@transfer.method(Voucher)
+def transfer_voucher(voucher, source_acct, target_acct):
+    '''Transfer funds by creating and depositing a voucher'''
+    voucher.withdraw()
+    return voucher.deposit(target_acct.nym, target_acct)

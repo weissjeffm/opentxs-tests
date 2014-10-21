@@ -4,7 +4,7 @@ from pyopentxs.nym import Nym
 from pyopentxs.asset import Asset
 from pyopentxs import account
 from datetime import datetime, timedelta
-from multimethods import singledispatch
+from pyopentxs.instrument import transfer, write
 
 # def test_check_server_id():
 #     nym_id = pyopentxs.create_nym()
@@ -33,33 +33,6 @@ def test_create_account():
     assert myacct._id in accounts
 
 
-@singledispatch
-def transfer(item, source_acct, target_acct):
-    '''generic function to transfer something from source to target. '''
-    raise NotImplementedError("Don't know how to transfer {}'".format(item))
-
-
-@transfer.method(int)
-def transfer_int(amount, source_acct, target_acct):
-    '''Send amount via direct transfer'''
-    return instrument.send_transfer(
-        source_acct.server_id, source_acct, target_acct, "withdraw", amount)
-
-
-@transfer.method(instrument.Cheque)
-def transfer_cheque(cheque, source_acct, target_acct):
-    '''Transfer funds by writing and depositing a cheque'''
-    cheque.write()
-    return cheque.deposit(target_acct.nym, target_acct)
-
-
-@transfer.method(instrument.Voucher)
-def transfer_voucher(voucher, source_acct, target_acct):
-    '''Transfer funds by creating and depositing a voucher'''
-    voucher.withdraw()
-    return voucher.deposit(target_acct.nym, target_acct)
-
-
 class TransferAccounts:
     '''A class to hold issuer/source/target accounts to test transfers.
        Start with 100 balance in the source account'''
@@ -81,8 +54,10 @@ class TransferAccounts:
         return self
 
     def assert_balances(self, issuer, source, target):
-        assert((issuer, source, target) == (self.issuer, self.source, self.target),
-               "Issuer/source/target balances do not match.")
+        assert (issuer, source, target) == (self.issuer.balance(),
+                                            self.source.balance(),
+                                            self.target.balance()),\
+            "Issuer/source/target balances do not match."
 
 
 def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000, source_nym=None):
@@ -183,6 +158,22 @@ def test_wrong_asset_type(instrument_constructor):
     ta_asset2.assert_balances(-100, 100, 0)
 
 
+@pytest.mark.parametrize("instrument_constructor",
+                         [
+                             new_cheque,
+                             # new_voucher (not found in outbox?)
+                         ])
+def test_cancel_instrument(instrument_constructor):
+    '''Cancel an instrument and make sure it can't be deposited.'''
+    accounts = TransferAccounts().initial_balance()
+    instrument = instrument_constructor(accounts.source, accounts.target, 50)
+    write(instrument)
+    instrument.cancel()
+    with error.expected(ReturnValueError):
+        instrument.deposit(accounts.target.nym, accounts.target)
+    accounts.assert_balances(-100, 100, 0)
+
+
 class TestChequeTransfer:
     @pytest.mark.parametrize("amount,first_valid,later_income,second_valid", [
         # not enough funds
@@ -244,5 +235,3 @@ class TestChequeTransfer:
             prepared_accounts.assert_balances(-100, 90, 10)
         else:
             prepared_accounts.assert_balances(-100, 100, 0)
-
-    # TODO: test cheque discard
