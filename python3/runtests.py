@@ -37,3 +37,8 @@ if __name__ == "__main__":
     pyopentxs.init()
     pytest.main(sys.argv[1:])
     pyopentxs.cleanup()
+    # kill existing processes
+    for proc in psutil.process_iter():
+        if proc.name() == "valgrind":
+            proc.kill()
+            psutil.wait_procs([proc], timeout=10)
