@@ -27,7 +27,7 @@ def restart_opentxs_notary():
     clean_ot_config()
 
     # start new
-    os.system("opentxs-notary > opentxs-notary.log 2>&1 &")
+    os.system("valgrind --tool=callgrind --collect-systime=yes opentxs-notary > opentxs-notary.log 2>&1 &")
 
     # wait for ready
     time.sleep(2)
