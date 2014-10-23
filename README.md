@@ -55,7 +55,7 @@ pip install -Ur requirements.txt
 
 ```shell
 cd ~/workspace/opentxs-tests/python3
-python3 runtests.py
+./runtests.py
 ```
 
 ## Logs
