@@ -1,4 +1,5 @@
 import opentxs
+import pyopentxs
 from pyopentxs import nym, config_dir, decode
 from contextlib import closing
 from bs4 import BeautifulSoup
@@ -19,9 +20,10 @@ def setup(contract_stream):
     '''
     Helps create a clean config dir starting from scratch.
     '''
-    server_nym = nym.create()
+    pyopentxs.init()
+    server_nym = nym.Nym().create()
     with closing(contract_stream):
-        server_contract = add(server_nym, contract_stream.read())
+        server_contract = add(server_nym._id, contract_stream.read())
     walletxml = decode(open(config_dir + "client_data/wallet.xml"))
     cached_key = BeautifulSoup(walletxml).wallet.cachedkey.string.strip()
     signed_contract_file = config_dir + "client_data/contracts/" + server_contract
@@ -40,7 +42,7 @@ def setup(contract_stream):
     # since we still don't have programmatic access, just print the info
     # for easy copying
     print(server_contract)
-    print(server_nym)
+    print(server_nym._id)
     print(cached_key + "\n~")
     print(decoded_signed_contract + "\n~")
 
