@@ -96,7 +96,10 @@ class TestGenericTransfer:
             (-10, False),
             (10, True),
             (200, False),
-            (0, False)
+            (0, False),
+            (2**63 - 100, False),
+            (2**63 - 1, False),
+            (-(2**63), False),
         ]
         instrument_data = [new_cheque,
                            new_voucher,
@@ -114,6 +117,32 @@ class TestGenericTransfer:
         else:
             prepared_accounts.assert_balances(-100, 100, 0)
 
+class TestIssuerGenericTransfer:
+    def pytest_generate_tests(self, metafunc):
+        transfer_amount_data = [
+            (-10, False),
+            (0, False),
+            (10, True),
+            # this is the maximal amount that we can transfer, so issuer balance is INT64_MIN
+            (2**63 - 100, True),
+            # now we transfer so big amount that issuer balance should be INT64_MIN - 1
+            (2**63 - 100 + 1, False),
+        ]
+        instrument_data = [new_cheque,
+                           new_voucher,
+                           new_transfer]
+        metafunc.parametrize("amount,should_pass", argvalues=transfer_amount_data)
+        metafunc.parametrize("instrument_constructor", argvalues=instrument_data)
+
+    def test_simple_transfer(self, prepared_accounts, amount, should_pass, instrument_constructor):
+        instrument = instrument_constructor(
+            prepared_accounts.issuer, prepared_accounts.target, amount)
+        with error.expected(None if should_pass else ReturnValueError):
+            transfer(instrument, prepared_accounts.issuer, prepared_accounts.target)
+        if should_pass:
+            prepared_accounts.assert_balances(-100 - amount, 100, amount)
+        else:
+            prepared_accounts.assert_balances(-100, 100, 0)
 
 @pytest.mark.parametrize("instrument_constructor", [new_cheque, new_voucher])
 def test_not_account_owner(prepared_accounts, instrument_constructor):
