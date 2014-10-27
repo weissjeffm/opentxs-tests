@@ -96,7 +96,10 @@ class TestGenericTransfer:
             (-10, False),
             (10, True),
             (200, False),
-            (0, False)
+            (0, False),
+            (2**63 - 100, False),
+            (2**63 - 1, False),
+            (-(2**63), False),
         ]
         instrument_data = [new_cheque,
                            new_voucher,
