@@ -101,17 +101,8 @@ class TestGenericTransfer:
         instrument_data = [new_cheque,
                            new_voucher,
                            new_transfer]
-        argvalues = []
-        for t in transfer_amount_data:
-            for i in instrument_data:
-                if i == new_transfer and t[0] < 0 or i == new_cheque and t[0] == 0:
-                    row = pytest.mark.skipif(
-                        True,
-                        reason="https://github.com/Open-Transactions/opentxs/issues/317")(t + (i,))
-                else:
-                    row = (t + (i,))
-                argvalues.append(row)
-        metafunc.parametrize("amount,should_pass,instrument_constructor", argvalues=argvalues)
+        metafunc.parametrize("amount,should_pass", argvalues=transfer_amount_data)
+        metafunc.parametrize("instrument_constructor", argvalues=instrument_data)
 
     def test_simple_transfer(self, prepared_accounts, amount, should_pass, instrument_constructor):
         instrument = instrument_constructor(
