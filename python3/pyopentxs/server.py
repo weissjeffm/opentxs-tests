@@ -39,6 +39,9 @@ def setup(contract_stream):
     # remove the client-side data
     shutil.rmtree(config_dir + "client_data")
 
+    # reread the client data (empty)
+    pyopentxs.init()
+
     # since we still don't have programmatic access, just print the info
     # for easy copying
     print(server_contract)
