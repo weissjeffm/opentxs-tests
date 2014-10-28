@@ -17,10 +17,13 @@ def test_register_nym():
     Nym().register(server_id=server.first_id())
 
 
-def test_issue_asset_contract():
+@pytest.mark.parametrize("issue_for_other_nym,expect_success", [[True, False], [False, True]])
+def test_issue_asset_contract(issue_for_other_nym, expect_success):
     server_id = server.first_id()
     nym = Nym().register(server_id)
-    Asset().issue(nym, open(btc_contract_file), server_id)
+    issue_for_nym = Nym().register(server_id) if issue_for_other_nym else nym
+    with error.expected(None if expect_success else ReturnValueError):
+        Asset().issue(nym, open(btc_contract_file), server_id, issue_for_nym=issue_for_nym)
 
 
 def test_create_account():

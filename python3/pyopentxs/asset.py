@@ -14,11 +14,14 @@ class Asset:
         self.issuer = nym
         self._id = asset_id
 
-    def issue(self, nym=None, contract_stream=None, server_id=None):
+    def issue(self, nym=None, contract_stream=None, server_id=None, issue_for_nym=None):
         '''Issues a new asset type on the given server and nym.  contract
            should be a string with the contract contents.
 
            nym must be registered.
+
+           issue_for_nym is the nym to try to create the issuer account as (OT shouldn't allow
+             if this isn't the same as the issuer nym) - for testing purposes
         '''
         # first create the contract if necessary
         self.server_id = self.server_id or server_id
@@ -26,7 +29,8 @@ class Asset:
         if not self._id:
             self.create_contract(nym, contract_stream)
         signed_contract = opentxs.OTAPI_Wrap_GetAssetType_Contract(self._id)
-        message = otme.issue_asset_type(server_id, nym._id, signed_contract)
+        message = otme.issue_asset_type(server_id, (issue_for_nym and issue_for_nym._id) or nym._id,
+                                        signed_contract)
         assert is_message_success(message)
         account_id = opentxs.OTAPI_Wrap_Message_GetNewIssuerAcctID(message)
         self.issuer_account = Account(asset=self, nym=self.issuer, server_id=self.server_id,
