@@ -181,10 +181,7 @@ def test_wrong_asset_type(instrument_constructor):
 
 
 @pytest.mark.parametrize("instrument_constructor",
-                         [
-                             new_cheque,
-                             # new_voucher (not found in outbox?)
-                         ])
+                         [new_cheque, new_voucher])
 def test_cancel_instrument(instrument_constructor):
     '''Cancel an instrument and make sure it can't be deposited.'''
     accounts = TransferAccounts().initial_balance()

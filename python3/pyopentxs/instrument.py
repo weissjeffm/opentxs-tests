@@ -89,15 +89,22 @@ class Voucher:
             self.server_id, self.sender_nym._id, self.sender_account._id, ledger, 0)
         output = opentxs.OTAPI_Wrap_Transaction_GetVoucher(self.server_id, self.sender_nym._id,
                                                            self.sender_account._id, transaction)
+
         if output == '':
             raise ReturnValueError(output)
+
         self._body = output
-        return self._body
+
+        # save a copy for myself in outpayments box, so i can cancel later
+        otme.send_user_payment(self.server_id, self.sender_nym._id, self.sender_nym._id, output)
+
+        return output
 
     def deposit(self, depositor_nym, depositor_account):
         '''Deposit the cheque, getting a written copy from the server first if we don't have one.'''
         deposit = otme.deposit_cheque(self.server_id, depositor_nym._id, depositor_account._id,
                                       self._body)
+        assert is_message_success(deposit)
         return deposit
 
     def cancel(self):
@@ -111,7 +118,8 @@ class Voucher:
                     self.sender_nym._id, self.sender_account._id, str(i))
                 assert result, "Unable to cancel voucher {}".format(self)
                 return
-        raise IndexError("Voucher {} not found in {} outpayments, can't cancel".format(self, outpayments_count))
+        raise IndexError("Voucher {} not found in {} outpayments, can't cancel".format(
+            self, outpayments_count))
 
 
 def send_transfer(server_id, acct_from, acct_to, note, amount):
