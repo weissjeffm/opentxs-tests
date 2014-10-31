@@ -47,6 +47,7 @@ def setup(contract_stream):
     print(server_contract)
     print(server_nym._id)
     print(cached_key + "\n~")
+    print("\n~")
     print(decoded_signed_contract + "\n~")
 
     # next line crashes the process

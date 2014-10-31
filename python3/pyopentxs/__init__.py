@@ -1,6 +1,7 @@
 import opentxs
 from contextlib import closing
 import os
+import sys
 
 
 # OTME = OpenTransactions MadeEasy
@@ -71,7 +72,7 @@ def _remove_pid():
     # instance
     pid_file = os.path.expanduser("~/.ot/client_data/ot.pid")
     if os.path.exists(pid_file):
-        print("removing lockfile %s" % pid_file)
+        print("removing lockfile %s" % pid_file, file=sys.stderr)
         os.remove(pid_file)
 
 

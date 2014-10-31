@@ -7,8 +7,11 @@ import time
 import pytest
 import pyopentxs
 
+def create_fresh_ot_config():
+    # this creates fresh data in ../ot-clean-data/.ot
+    os.system("../create_ot_clean_data.sh")
 
-def clean_ot_config():
+def install_ot_config():
     # copy the clean data directory
     if os.path.exists(pyopentxs.config_dir):
         shutil.rmtree(pyopentxs.config_dir)
@@ -23,8 +26,9 @@ def restart_opentxs_notary():
             proc.kill()
             psutil.wait_procs([proc], timeout=10)
 
-    # clean the config dir
-    clean_ot_config()
+    create_fresh_ot_config()
+    
+    install_ot_config()
 
     # start new
     os.system("opentxs-notary > opentxs-notary.log 2>&1 &")
