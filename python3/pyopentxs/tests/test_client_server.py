@@ -5,16 +5,11 @@ from pyopentxs.asset import Asset
 from pyopentxs import account
 from datetime import datetime, timedelta
 from pyopentxs.instrument import transfer, write
+from pyopentxs.tests import data
 
 # def test_check_server_id():
 #     nym_id = pyopentxs.create_nym()
 #     assert pyopentxs.check_server_id(get_server_id(), nym_id)
-
-btc_contract_file = "../test-data/sample-contracts/btc.xml"
-
-
-def test_register_nym():
-    Nym().register(server_id=server.first_id())
 
 
 @pytest.mark.parametrize("issue_for_other_nym,expect_success", [[True, False], [False, True]])
@@ -23,44 +18,17 @@ def test_issue_asset_contract(issue_for_other_nym, expect_success):
     nym = Nym().register(server_id)
     issue_for_nym = Nym().register(server_id) if issue_for_other_nym else nym
     with error.expected(None if expect_success else ReturnValueError):
-        Asset().issue(nym, open(btc_contract_file), server_id, issue_for_nym=issue_for_nym)
+        Asset().issue(nym, open(data.btc_contract_file), server_id, issue_for_nym=issue_for_nym)
 
 
 def test_create_account():
     server_id = server.first_id()
     nym = Nym().register(server_id)
-    asset = Asset().issue(nym, open(btc_contract_file), server_id)
+    asset = Asset().issue(nym, open(data.btc_contract_file), server_id)
     myacct = account.Account(asset, nym).create()
 
     accounts = account.get_all_ids()
     assert myacct._id in accounts
-
-
-class TransferAccounts:
-    '''A class to hold issuer/source/target accounts to test transfers.
-       Start with 100 balance in the source account'''
-    def __init__(self):
-        server_id = server.first_id()
-
-        self.asset = Asset().issue(Nym().register(server_id),
-                                   open(btc_contract_file), server_id)
-
-        self.source = account.Account(self.asset, Nym().register(server_id)).create()
-        self.target = account.Account(self.asset, Nym().register(server_id)).create()
-        self.issuer = self.asset.issuer_account
-
-    def initial_balance(self, balance=100):
-        # send 100 from issuer to nym_source_id
-        # self.cheque = new_cheque(self.issuer, self.source, balance)
-        # transfer(self.cheque, self.issuer, self.source)
-        transfer(balance, self.issuer, self.source)
-        return self
-
-    def assert_balances(self, issuer, source, target):
-        assert (issuer, source, target) == (self.issuer.balance(),
-                                            self.source.balance(),
-                                            self.target.balance()),\
-            "Issuer/source/target balances do not match."
 
 
 def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000, source_nym=None):
@@ -88,7 +56,7 @@ def new_transfer(source, target, amount):
 
 @pytest.fixture()
 def prepared_accounts(request):
-    accts = TransferAccounts()
+    accts = data.TransferAccounts()
     accts.initial_balance()
     return accts
 
@@ -173,8 +141,8 @@ def test_not_account_owner(prepared_accounts, instrument_constructor):
 def test_wrong_asset_type(instrument_constructor):
     '''Try to transfer eg a cheque from one asset account to another of a
        different type. Should fail'''
-    ta_asset1 = TransferAccounts().initial_balance()
-    ta_asset2 = TransferAccounts().initial_balance()
+    ta_asset1 = data.TransferAccounts().initial_balance()
+    ta_asset2 = data.TransferAccounts().initial_balance()
     source = ta_asset1.source
     target = ta_asset2.target
     instrument = instrument_constructor(source, target, 50)
@@ -187,7 +155,7 @@ def test_wrong_asset_type(instrument_constructor):
                          [new_cheque, new_voucher])
 def test_cancel_instrument(instrument_constructor):
     '''Cancel an instrument and make sure it can't be deposited.'''
-    accounts = TransferAccounts().initial_balance()
+    accounts = data.TransferAccounts().initial_balance()
     instrument = instrument_constructor(accounts.source, accounts.target, 50)
     write(instrument)
     instrument.cancel()

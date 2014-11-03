@@ -1,4 +1,4 @@
-from pyopentxs import otme, ReturnValueError, is_message_success
+from pyopentxs import otme, ReturnValueError, is_message_success, server
 import opentxs
 
 
@@ -32,13 +32,18 @@ class Nym:
            Returns the nym object.
 
         '''
-        server_id = server_id or self.server_id
+        server_id = server_id or self.server_id or server.only_id()
         assert server_id, "Can't register a nym without a server id.'"
+        self.server_id = server_id
         if not self._id:
             self.create()
         message = otme.register_nym(server_id, self._id)
         assert is_message_success(message)
         return self
+
+    def delete(self):
+        deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
+        assert deleted > 0, "Unable to delete nym {}, return code {}".format(self._id, deleted)
 
     def name(self):
         """

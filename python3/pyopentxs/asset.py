@@ -1,5 +1,5 @@
 import opentxs
-from pyopentxs import is_message_success, otme
+from pyopentxs import is_message_success, otme, server
 from pyopentxs.account import Account
 
 
@@ -24,12 +24,13 @@ class Asset:
              if this isn't the same as the issuer nym) - for testing purposes
         '''
         # first create the contract if necessary
-        self.server_id = self.server_id or server_id
+        self.server_id = self.server_id or server_id or server.only_id()
         assert self.server_id
         if not self._id:
             self.create_contract(nym, contract_stream)
         signed_contract = opentxs.OTAPI_Wrap_GetAssetType_Contract(self._id)
-        message = otme.issue_asset_type(server_id, (issue_for_nym and issue_for_nym._id) or nym._id,
+        message = otme.issue_asset_type(self.server_id,
+                                        (issue_for_nym and issue_for_nym._id) or nym._id,
                                         signed_contract)
         assert is_message_success(message)
         account_id = opentxs.OTAPI_Wrap_Message_GetNewIssuerAcctID(message)
