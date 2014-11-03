@@ -23,7 +23,7 @@ cmake .. \
 Clone this repo:
 
 ```shell
-cd ~/workspace
+cd ~/<your-workspace>
 git clone https://github.com/monetas/opentxs-tests
 ```
 
