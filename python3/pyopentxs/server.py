@@ -1,11 +1,4 @@
 import opentxs
-import pyopentxs
-from pyopentxs import nym, config_dir, decode
-from contextlib import closing
-from bs4 import BeautifulSoup
-import io
-import os
-import shutil
 
 
 def add(nym_id, contract):
@@ -14,49 +7,6 @@ def add(nym_id, contract):
     contract_id = opentxs.OTAPI_Wrap_CreateServerContract(nym_id, contract)
     assert(len(contract_id) > 0)
     return contract_id
-
-
-def setup(contract_stream):
-    '''
-    Helps create a clean config dir starting from scratch.
-    '''
-    pyopentxs.init()
-    server_nym = nym.Nym().create()
-    with closing(contract_stream):
-        server_contract = add(server_nym._id, contract_stream.read())
-    walletxml = decode(open(config_dir + "client_data/wallet.xml"))
-    cached_key = BeautifulSoup(walletxml).wallet.cachedkey.string.strip()
-    signed_contract_file = config_dir + "client_data/contracts/" + server_contract
-    with closing(open(signed_contract_file)) as f:
-        signed_contract = f.read()
-    decoded_signed_contract = decode(io.StringIO(signed_contract))
-
-    # copy the credentials to the server
-    server_data_dir = config_dir + "server_data/"
-    if not os.path.exists(server_data_dir):
-        os.mkdir(server_data_dir)
-    shutil.copytree(config_dir + "client_data/credentials", server_data_dir + "credentials")
-    # remove the client-side data
-    shutil.rmtree(config_dir + "client_data")
-
-    # reread the client data (empty)
-    pyopentxs.init()
-
-    # since we still don't have programmatic access, just print the info
-    # for easy copying
-    print(server_contract)
-    print(server_nym._id)
-    print(cached_key + "\n~")
-    print("\n~")
-    print(decoded_signed_contract + "\n~")
-
-    # next line crashes the process
-    # opentxs.MainFile(None).CreateMainFile(signed_contract, server_contract, "", server_nym,
-    # cached_key)
-    # add the server contract on the client side
-    opentxs.OTAPI_Wrap_AddServerContract(decoded_signed_contract)
-
-    return decoded_signed_contract
 
 
 def get_all():
@@ -73,6 +23,15 @@ def get_all():
 
 def first_id():
     return get_all()[0][0]
+
+
+def only_id():
+    '''Returns the server id if there is only one server, otherwise raises an error'''
+    servers = get_all()
+    if len(servers) == 0:
+        return None
+    assert len(servers) == 1, "There are multiple servers, you must explicitly pick one"
+    return servers[0][0]
 
 
 def check_id(server_id, user_id):
