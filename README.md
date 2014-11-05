@@ -29,7 +29,10 @@ git clone https://github.com/monetas/opentxs-tests
 
 I recommend creating a virtualenv:
 
-`virtualenv ~/.virtualenvs/opentxs`
+```shell
+virtualenv -p `which python3` ~/.virtualenvs/opentxs
+```
+
 
 Then edit `~/.virtualenvs/opentxs/bin/activate` and add the following environment variables at the bottom (so that you don't have to keep setting them each time you use a new shell). Edit the paths to reflect where you installed opentxs libraries, and where you cloned this repository.
 
