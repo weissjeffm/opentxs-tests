@@ -32,7 +32,7 @@ class Nym:
            Returns the nym object.
 
         '''
-        server_id = server_id or self.server_id or server.only_id()
+        server_id = server_id or self.server_id or server.first_active_id()
         assert server_id, "Can't register a nym without a server id.'"
         self.server_id = server_id
         if not self._id:
@@ -43,6 +43,7 @@ class Nym:
 
     def delete(self):
         deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
+        print("deleting {} returned {}".format(self._id, deleted))
         assert deleted > 0, "Unable to delete nym {}, return code {}".format(self._id, deleted)
 
     def name(self):
