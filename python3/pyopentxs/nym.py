@@ -25,6 +25,15 @@ class Nym:
         self._id = retval
         return self
 
+    def set_name(self, name, signer_nym_id=None):
+        retval = opentxs.OTAPI_Wrap_SetNym_Name(self._id, signer_nym_id or self._id, name)
+        if retval == '':
+            raise ReturnValueError("Could not set nym name to {}, return code {}".format(
+                name, retval))
+
+    def get_name(self):
+        return opentxs.OTAPI_Wrap_GetNym_Name(self._id)
+
     def register(self, server_id=None):
         '''Registers the nym with the given server.  If there is no nym id yet
            (this object is still empty), the nym data will be created
@@ -39,12 +48,15 @@ class Nym:
             self.create()
         message = otme.register_nym(server_id, self._id)
         assert is_message_success(message)
+        print(message)
         return self
 
     def delete(self):
         deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
         print("deleting {} returned {}".format(self._id, deleted))
-        assert deleted > 0, "Unable to delete nym {}, return code {}".format(self._id, deleted)
+        if deleted <= 0:
+            raise ReturnValueError("Unable to delete nym {}, return code {}".format(
+                self._id, deleted))
 
     def name(self):
         """

@@ -2,7 +2,6 @@ import pytest
 from pyopentxs import (server, ReturnValueError, is_message_success, error, instrument)
 from pyopentxs.nym import Nym
 from pyopentxs.asset import Asset
-from pyopentxs import account
 from datetime import datetime, timedelta
 from pyopentxs.instrument import transfer, write
 from pyopentxs.tests import data
@@ -14,21 +13,11 @@ from pyopentxs.tests import data
 
 @pytest.mark.parametrize("issue_for_other_nym,expect_success", [[True, False], [False, True]])
 def test_issue_asset_contract(issue_for_other_nym, expect_success):
-    server_id = server.first_id()
+    server_id = server.first_active_id()
     nym = Nym().register(server_id)
     issue_for_nym = Nym().register(server_id) if issue_for_other_nym else nym
     with error.expected(None if expect_success else ReturnValueError):
         Asset().issue(nym, open(data.btc_contract_file), server_id, issue_for_nym=issue_for_nym)
-
-
-def test_create_account():
-    server_id = server.first_id()
-    nym = Nym().register(server_id)
-    asset = Asset().issue(nym, open(data.btc_contract_file), server_id)
-    myacct = account.Account(asset, nym).create()
-
-    accounts = account.get_all_ids()
-    assert myacct._id in accounts
 
 
 def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000, source_nym=None):
