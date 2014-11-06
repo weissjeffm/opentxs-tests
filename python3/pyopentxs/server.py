@@ -1,5 +1,8 @@
 import opentxs
 
+# the ids of the notaries we know we should be able to contact
+active = []
+
 
 def add(nym_id, contract):
     '''Create a server contract with the given nym_id and the contract
@@ -54,3 +57,8 @@ def check_id(server_id, user_id):
     # in OTClient::ProcessUserCommand()
 
     return retval == 1
+
+
+def first_active_id():
+    '''Return the first known active notary'''
+    return active[0]

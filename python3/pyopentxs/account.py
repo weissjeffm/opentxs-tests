@@ -23,6 +23,11 @@ class Account:
         self._id = s.createaccount['accountid']
         return self
 
+    def delete(self):
+        deleted = opentxs.OTAPI_Wrap_deleteAssetAccount(self.server_id, self.nym._id, self._id)
+        print("deleting {} returned {}".format(self._id, deleted))
+        assert deleted > 0, "Unable to delete account {}, return code {}".format(self._id, deleted)
+
     def balance(self):
         """
         refresh local account files from server and return account balance
