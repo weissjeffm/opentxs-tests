@@ -33,7 +33,7 @@ class Cheque:
             self.sender_account._id,
             self.sender_nym._id,
             self.cheque_memo,
-            self.recipient_nym._id)
+            self.recipient_nym and self.recipient_nym._id or "")
         return self._body
 
     def deposit(self, depositor_nym, depositor_account):

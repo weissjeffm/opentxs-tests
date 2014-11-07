@@ -19,7 +19,8 @@ class Account:
 
         valid_xml = re.sub("<@createAccount", "<createAccount", account_xml)
         s = BeautifulSoup(valid_xml)
-
+        if not s.createaccount:
+            raise ReturnValueError("No account id present in response, account not created.")
         self._id = s.createaccount['accountid']
         return self
 

@@ -2,6 +2,7 @@ import pytest
 from pyopentxs import (server, ReturnValueError, is_message_success, error, instrument)
 from pyopentxs.nym import Nym
 from pyopentxs.asset import Asset
+from pyopentxs.account import Account
 from datetime import datetime, timedelta
 from pyopentxs.instrument import transfer, write
 from pyopentxs.tests import data
@@ -214,3 +215,24 @@ class TestChequeTransfer:
             prepared_accounts.assert_balances(-100, 90, 10)
         else:
             prepared_accounts.assert_balances(-100, 100, 0)
+
+    @pytest.mark.parametrize("recipient_is_blank", [True, False])
+    def test_write_cheque_to_unregistered_nym(self, prepared_accounts, recipient_is_blank):
+        unreg_nym = Nym().create()
+        now = datetime.utcnow()
+        c = instrument.Cheque(
+            prepared_accounts.source.server_id,
+            50,
+            now + timedelta(0, -1000),
+            now + timedelta(0, 1000),
+            prepared_accounts.source,
+            prepared_accounts.source.nym,
+            "test cheque!",
+            None if recipient_is_blank else unreg_nym
+        )
+        c.write()
+        # now register the nym and deposit
+        unreg_nym.register()
+        new_acct = Account(prepared_accounts.source.asset, unreg_nym).create()
+        c.deposit(unreg_nym, new_acct)
+        prepared_accounts.assert_balances(-100, 50, 0)
