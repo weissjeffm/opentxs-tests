@@ -236,3 +236,26 @@ class TestChequeTransfer:
         new_acct = Account(prepared_accounts.source.asset, unreg_nym).create()
         c.deposit(unreg_nym, new_acct)
         prepared_accounts.assert_balances(-100, 50, 0)
+
+
+@pytest.mark.parametrize("recipient_is_blank",
+                         [pytest.mark.skipif(
+                             True,
+                             reason="https://github.com/Open-Transactions/opentxs/issues/388")
+                          ([True]), False])
+def test_withdraw_voucher_to_unregistered_nym(prepared_accounts, recipient_is_blank):
+    unreg_nym = Nym().create()
+    v = instrument.Voucher(
+        prepared_accounts.source.server_id,
+        50,
+        prepared_accounts.source,
+        prepared_accounts.source.nym,
+        "test cheque!",
+        None if recipient_is_blank else unreg_nym
+    )
+    v.withdraw()
+    # now register the nym and deposit
+    unreg_nym.register()
+    new_acct = Account(prepared_accounts.source.asset, unreg_nym).create()
+    v.deposit(unreg_nym, new_acct)
+    prepared_accounts.assert_balances(-100, 50, 0)

@@ -82,7 +82,8 @@ class Voucher:
         """
         message = otme.withdraw_voucher(self.server_id, self.sender_nym._id,
                                         self.sender_account._id,
-                                        self.recipient_nym._id, self.memo, self.amount)
+                                        self.recipient_nym and self.recipient_nym._id or "",
+                                        self.memo, self.amount)
         assert is_message_success(message)
         ledger = opentxs.OTAPI_Wrap_Message_GetLedger(message)
         transaction = opentxs.OTAPI_Wrap_Ledger_GetTransactionByIndex(
