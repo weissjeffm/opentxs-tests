@@ -259,3 +259,33 @@ def test_withdraw_voucher_to_unregistered_nym(prepared_accounts, recipient_is_bl
     new_acct = Account(prepared_accounts.source.asset, unreg_nym).create()
     v.deposit(unreg_nym, new_acct)
     prepared_accounts.assert_balances(-100, 50, 0)
+
+
+def test_auditor_traffic():
+    '''Test that generates specific traffic for the auditor.
+    see https://docs.google.com/a/monetas.net/\
+    document/d/1q9LxqSaywjM_20uGfl5msL-EFWkxxaotbZpI9c0zhAE/edit#
+    '''
+    # alice = Nym().register()
+    # opentxs.OTAPI_Wrap_getRequest()
+    # wip
+
+
+@pytest.mark.parametrize("amount,should_pass",
+                         [[-10, True],
+                          [-110, False],
+                          [10, False]])
+def test_invoice(prepared_accounts, amount, should_pass):
+    '''an invoice is just a cheque for a negative amount, so the target
+       will invoice the source by writing him a cheque for a negative
+       amount.  After a successful deposit, funds move from source to
+       target.
+
+    '''
+    invoice = new_cheque(prepared_accounts.target, prepared_accounts.source, amount)
+    invoice.write()
+    with error.expected(None if should_pass else ReturnValueError):
+        invoice.deposit(prepared_accounts.source.nym, prepared_accounts.source)
+    prepared_accounts.assert_balances(-100,
+                                      100 + amount if should_pass else 100,
+                                      -amount if should_pass else 0)
