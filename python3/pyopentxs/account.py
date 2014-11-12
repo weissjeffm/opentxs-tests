@@ -15,6 +15,9 @@ class Account:
         self._id = _id
 
     def create(self):
+        if self._id:
+            raise ValueError("Can't create the same account twice,\
+            to create an account of the same type, create a new Account object first.")
         account_xml = otme.create_asset_acct(self.server_id, self.nym._id, self.asset._id)
 
         valid_xml = re.sub("<@createAccount", "<createAccount", account_xml)
