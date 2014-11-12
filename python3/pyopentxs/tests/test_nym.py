@@ -24,14 +24,25 @@ def test_double_delete():
     with error.expected(ReturnValueError):
         n.delete()
 
+string_overflow = lambda: "asdfasdf" * 1024
+string_returnchar = lambda: "\n"
 
-def test_set_name():
+
+@pytest.mark.parametrize(
+    "newname",
+    ["Bob",
+     pytest.mark.skipif(True,
+                        reason="https://github.com/Open-Transactions/opentxs/issues/400")(("",)),
+     string_returnchar,
+     string_overflow,
+     "我能吞下玻璃而不伤身体"])
+def test_set_name(newname):
+    newname = newname() if callable(newname) else newname
     n = Nym().create()
     origname = "Joe"
     n.set_name(origname)
     assert n.get_name() == origname
     n.register()
-    newname = "Bob"
     n.set_name(newname)
     assert n.get_name() == newname
     n.register()
