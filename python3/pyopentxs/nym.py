@@ -26,10 +26,9 @@ class Nym:
         return self
 
     def set_name(self, name, signer_nym_id=None):
-        retval = opentxs.OTAPI_Wrap_SetNym_Name(self._id, signer_nym_id or self._id, name)
-        if retval == '':
-            raise ReturnValueError("Could not set nym name to {}, return code {}".format(
-                name, retval))
+        success = opentxs.OTAPI_Wrap_SetNym_Name(self._id, signer_nym_id or self._id, name)
+        if not success:
+            raise ReturnValueError("Could not set nym name to {}")
 
     def get_name(self):
         return opentxs.OTAPI_Wrap_GetNym_Name(self._id)
