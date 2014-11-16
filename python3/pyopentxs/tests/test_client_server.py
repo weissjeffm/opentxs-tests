@@ -2,7 +2,7 @@ import pytest
 from pyopentxs import (server, ReturnValueError, is_message_success, error, instrument)
 from pyopentxs.nym import Nym
 from pyopentxs.asset import Asset
-from pyopentxs import account
+from pyopentxs.account import Account
 from datetime import datetime, timedelta
 from pyopentxs.instrument import transfer, write
 from pyopentxs.tests import data
@@ -14,21 +14,11 @@ from pyopentxs.tests import data
 
 @pytest.mark.parametrize("issue_for_other_nym,expect_success", [[True, False], [False, True]])
 def test_issue_asset_contract(issue_for_other_nym, expect_success):
-    server_id = server.first_id()
+    server_id = server.first_active_id()
     nym = Nym().register(server_id)
     issue_for_nym = Nym().register(server_id) if issue_for_other_nym else nym
     with error.expected(None if expect_success else ReturnValueError):
         Asset().issue(nym, open(data.btc_contract_file), server_id, issue_for_nym=issue_for_nym)
-
-
-def test_create_account():
-    server_id = server.first_id()
-    nym = Nym().register(server_id)
-    asset = Asset().issue(nym, open(data.btc_contract_file), server_id)
-    myacct = account.Account(asset, nym).create()
-
-    accounts = account.get_all_ids()
-    assert myacct._id in accounts
 
 
 def new_cheque(source, target, amount, valid_from=-10000, valid_to=10000, source_nym=None):
@@ -225,3 +215,77 @@ class TestChequeTransfer:
             prepared_accounts.assert_balances(-100, 90, 10)
         else:
             prepared_accounts.assert_balances(-100, 100, 0)
+
+    @pytest.mark.parametrize("recipient_is_blank", [True, False])
+    def test_write_cheque_to_unregistered_nym(self, prepared_accounts, recipient_is_blank):
+        unreg_nym = Nym().create()
+        now = datetime.utcnow()
+        c = instrument.Cheque(
+            prepared_accounts.source.server_id,
+            50,
+            now + timedelta(0, -1000),
+            now + timedelta(0, 1000),
+            prepared_accounts.source,
+            prepared_accounts.source.nym,
+            "test cheque!",
+            None if recipient_is_blank else unreg_nym
+        )
+        c.write()
+        # now register the nym and deposit
+        unreg_nym.register()
+        new_acct = Account(prepared_accounts.source.asset, unreg_nym).create()
+        c.deposit(unreg_nym, new_acct)
+        prepared_accounts.assert_balances(-100, 50, 0)
+
+
+@pytest.mark.parametrize("recipient_is_blank",
+                         [pytest.mark.skipif(
+                             True,
+                             reason="https://github.com/Open-Transactions/opentxs/issues/388")
+                          ([True]), False])
+def test_withdraw_voucher_to_unregistered_nym(prepared_accounts, recipient_is_blank):
+    unreg_nym = Nym().create()
+    v = instrument.Voucher(
+        prepared_accounts.source.server_id,
+        50,
+        prepared_accounts.source,
+        prepared_accounts.source.nym,
+        "test cheque!",
+        None if recipient_is_blank else unreg_nym
+    )
+    v.withdraw()
+    # now register the nym and deposit
+    unreg_nym.register()
+    new_acct = Account(prepared_accounts.source.asset, unreg_nym).create()
+    v.deposit(unreg_nym, new_acct)
+    prepared_accounts.assert_balances(-100, 50, 0)
+
+
+def test_auditor_traffic():
+    '''Test that generates specific traffic for the auditor.
+    see https://docs.google.com/a/monetas.net/\
+    document/d/1q9LxqSaywjM_20uGfl5msL-EFWkxxaotbZpI9c0zhAE/edit#
+    '''
+    # alice = Nym().register()
+    # opentxs.OTAPI_Wrap_getRequest()
+    # wip
+
+
+@pytest.mark.parametrize("amount,should_pass",
+                         [[-10, True],
+                          [-110, False],
+                          [10, False]])
+def test_invoice(prepared_accounts, amount, should_pass):
+    '''an invoice is just a cheque for a negative amount, so the target
+       will invoice the source by writing him a cheque for a negative
+       amount.  After a successful deposit, funds move from source to
+       target.
+
+    '''
+    invoice = new_cheque(prepared_accounts.target, prepared_accounts.source, amount)
+    invoice.write()
+    with error.expected(None if should_pass else ReturnValueError):
+        invoice.deposit(prepared_accounts.source.nym, prepared_accounts.source)
+    prepared_accounts.assert_balances(-100,
+                                      100 + amount if should_pass else 100,
+                                      -amount if should_pass else 0)

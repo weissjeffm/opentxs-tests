@@ -7,7 +7,7 @@ from multimethods import singledispatch
 class Cheque:
     def __init__(self, server_id, cheque_amount, valid_from, valid_to, sender_account,
                  sender_nym, cheque_memo, recipient_nym):
-        self.server_id = server_id or server.only_id()
+        self.server_id = server_id or server.first_active_id()
         self.cheque_amount = cheque_amount
         self.valid_from = valid_from
         self.valid_to = valid_to
@@ -33,7 +33,7 @@ class Cheque:
             self.sender_account._id,
             self.sender_nym._id,
             self.cheque_memo,
-            self.recipient_nym._id)
+            self.recipient_nym and self.recipient_nym._id or "")
         return self._body
 
     def deposit(self, depositor_nym, depositor_account):
@@ -68,7 +68,7 @@ class Cheque:
 
 class Voucher:
     def __init__(self, server_id, amount, sender_account, sender_nym, memo, recipient_nym):
-        self.server_id = server_id or server.only_id()
+        self.server_id = server_id or server.first_active_id()
         self.amount = amount
         self.sender_account = sender_account
         self.sender_nym = sender_nym
@@ -82,7 +82,8 @@ class Voucher:
         """
         message = otme.withdraw_voucher(self.server_id, self.sender_nym._id,
                                         self.sender_account._id,
-                                        self.recipient_nym._id, self.memo, self.amount)
+                                        self.recipient_nym and self.recipient_nym._id or "",
+                                        self.memo, self.amount)
         assert is_message_success(message)
         ledger = opentxs.OTAPI_Wrap_Message_GetLedger(message)
         transaction = opentxs.OTAPI_Wrap_Ledger_GetTransactionByIndex(
@@ -123,7 +124,7 @@ class Voucher:
 
 
 def send_transfer(server_id=None, acct_from=None, acct_to=None, note=None, amount=None):
-    server_id = server_id or server.only_id()
+    server_id = server_id or server.first_id()
     print("transferring {} from {} to {} on {}".format(amount, acct_from, acct_to, server_id))
     message = otme.send_transfer(server_id, acct_from.nym._id, acct_from._id,
                                  acct_to._id, amount, note)

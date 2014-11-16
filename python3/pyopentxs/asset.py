@@ -24,7 +24,7 @@ class Asset:
              if this isn't the same as the issuer nym) - for testing purposes
         '''
         # first create the contract if necessary
-        self.server_id = self.server_id or server_id or server.only_id()
+        self.server_id = self.server_id or server_id or server.first_active_id()
         assert self.server_id
         if not self._id:
             self.create_contract(nym, contract_stream)

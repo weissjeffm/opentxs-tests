@@ -15,13 +15,22 @@ class Account:
         self._id = _id
 
     def create(self):
+        if self._id:
+            raise ValueError("Can't create the same account twice,\
+            to create an account of the same type, create a new Account object first.")
         account_xml = otme.create_asset_acct(self.server_id, self.nym._id, self.asset._id)
 
         valid_xml = re.sub("<@createAccount", "<createAccount", account_xml)
         s = BeautifulSoup(valid_xml)
-
+        if not s.createaccount:
+            raise ReturnValueError("No account id present in response, account not created.")
         self._id = s.createaccount['accountid']
         return self
+
+    def delete(self):
+        deleted = opentxs.OTAPI_Wrap_deleteAssetAccount(self.server_id, self.nym._id, self._id)
+        print("deleting {} returned {}".format(self._id, deleted))
+        assert deleted > 0, "Unable to delete account {}, return code {}".format(self._id, deleted)
 
     def balance(self):
         """
