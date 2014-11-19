@@ -47,7 +47,11 @@ class Account:
         refresh local account files from server and return account balance
         """
         assert self._id, "Account must be created first."
-        res = opentxs.OTAPI_Wrap_getAccountFiles(self.server_id, self.nym._id, self._id)
+        
+        if hasattr(opentxs, 'OTAPI_Wrap_getAccountData'): # new api name
+            res = opentxs.OTAPI_Wrap_getAccountData(self.server_id, self.nym._id, self._id)
+        else: # old api name, remove in due time
+            res = opentxs.OTAPI_Wrap_getAccountFiles(self.server_id, self.nym._id, self._id)
         if res < 0:
             raise ReturnValueError(res)
         return opentxs.OTAPI_Wrap_GetAccountWallet_Balance(self._id)
