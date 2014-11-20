@@ -40,6 +40,12 @@ def restart_opentxs_notary():
     # doesn't seem to be necessary
     # time.sleep(2)
 
+
+def fresh_setup():
+    restart_opentxs_notary()
+    pyopentxs.init()
+
+
 if __name__ == "__main__":
     restart_opentxs_notary()
     pyopentxs.init()

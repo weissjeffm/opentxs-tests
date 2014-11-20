@@ -60,8 +60,14 @@ def check_id(server_id, user_id):
 
 
 def first_active_id():
-    '''Return the first known active notary'''
-    return active[0]
+    '''Return the first known active notary, or if there are none, just
+    the first one.  We should have at least one we're talking to.
+
+    '''
+    if active:
+        return active[0]
+    else:
+        return first_id()
 
 
 def first_inactive_id():

@@ -1,7 +1,8 @@
 from pyopentxs.nym import Nym
 from pyopentxs.asset import Asset
-from pyopentxs.instrument import transfer
 from pyopentxs.account import Account
+from pyopentxs.instrument import transfer
+
 btc_contract_file = "../test-data/sample-contracts/btc.xml"
 silver_contract_file = "../test-data/sample-contracts/silver.xml"
 
@@ -34,8 +35,8 @@ class TransferAccounts:
 class TradeAccount:
     def __init__(self, nym, asset1, asset2):
         self.nym = nym
-        self.account1 = Account(asset1, self.nym).create()
-        self.account2 = Account(asset2, self.nym).create()
+        self.account1 = Account(asset1, self.nym)
+        self.account2 = Account(asset2, self.nym)
 
     def create(self):
         self.account1.create()
@@ -63,11 +64,11 @@ class MarketAccounts:
     def initial_balance(self, balance=100):
         # start everyone off with 100 of each asset
 
-        transfer(balance, self.asset1.issuer, self.alice)
-        transfer(balance, self.asset1.issuer, self.bob)
-        transfer(balance, self.asset1.issuer, self.charlie)
+        transfer(balance, self.asset1.issuer_account, self.alice.account1)
+        transfer(balance, self.asset1.issuer_account, self.bob.account1)
+        transfer(balance, self.asset1.issuer_account, self.charlie.account1)
 
-        transfer(balance, self.asset2.issuer, self.alice)
-        transfer(balance, self.asset2.issuer, self.bob)
-        transfer(balance, self.asset2.issuer, self.charlie)
+        transfer(balance, self.asset2.issuer_account, self.alice.account2)
+        transfer(balance, self.asset2.issuer_account, self.bob.account2)
+        transfer(balance, self.asset2.issuer_account, self.charlie.account2)
         return self
