@@ -289,3 +289,16 @@ def test_invoice(prepared_accounts, amount, should_pass):
     prepared_accounts.assert_balances(-100,
                                       100 + amount if should_pass else 100,
                                       -amount if should_pass else 0)
+
+
+@pytest.mark.parametrize("amount",
+                         [10, 2 ** 63 - 100 - 1, -10, -100])
+def test_issuer_bidirectional(prepared_accounts, amount):
+    '''Test a cheque and then an invoice for the same amount, from issuer
+    to source (or the other way around)'''
+    first_transfer = new_cheque(prepared_accounts.issuer, prepared_accounts.source, amount)
+    transfer(first_transfer, prepared_accounts.issuer, prepared_accounts.source)
+    prepared_accounts.assert_balances(-100 - amount, 100 + amount, 0)
+    second_transfer = new_cheque(prepared_accounts.issuer, prepared_accounts.source, -amount)
+    transfer(second_transfer, prepared_accounts.issuer, prepared_accounts.source)
+    prepared_accounts.assert_balances(-100, 100, 0)
