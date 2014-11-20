@@ -50,7 +50,7 @@ class Account:
         
         if hasattr(opentxs, 'OTAPI_Wrap_getAccountData'): # new api name
             res = opentxs.OTAPI_Wrap_getAccountData(self.server_id, self.nym._id, self._id)
-        else: # old api name, remove in due time
+        else: # todo: old api name, remove in due time
             res = opentxs.OTAPI_Wrap_getAccountFiles(self.server_id, self.nym._id, self._id)
         if res < 0:
             raise ReturnValueError(res)
