@@ -51,11 +51,11 @@ class Nym:
         return self
 
     def delete(self):
-        if hasattr(opentxs, 'OTAPI_Wrap_unregisterNym'): # new api name
+        if hasattr(opentxs, 'OTAPI_Wrap_unregisterNym'):  # new api name
             deleted = opentxs.OTAPI_Wrap_unregisterNym(self.server_id, self._id)
-        elif hasattr(opentxs, 'OTAPI_Wrap_deleteNym'): # todo: old api name, remove in due time
+        elif hasattr(opentxs, 'OTAPI_Wrap_deleteNym'):  # todo: old api name, remove in due time
             deleted = opentxs.OTAPI_Wrap_deleteNym(self.server_id, self._id)
-        else: # todo: old api name, remove in due time
+        else:  # todo: old api name, remove in due time
             deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
         print("deleting {} returned {}".format(self._id, deleted))
         if deleted <= 0:
@@ -99,7 +99,7 @@ def get_all():
     return nyms
 
 
-def check_user(server, nym, target_nym):
-    # TODO
-    # see ot wiki "API" / "Write a checkque"
-    return otme.check_user(server, nym, target_nym)
+def check(server, nym, target_nym):
+    checked = otme.check_nym(server, nym, target_nym)
+    if checked == "":
+        raise ReturnValueError("Could not check nym {} as {}".format(target_nym, nym))
