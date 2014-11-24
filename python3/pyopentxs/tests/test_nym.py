@@ -1,6 +1,7 @@
 from pyopentxs.nym import Nym
 from pyopentxs.tests import data
-from pyopentxs import error, ReturnValueError
+from pyopentxs import error, nym, ReturnValueError, server
+import pyopentxs
 import pytest
 
 
@@ -73,3 +74,15 @@ def test_delete_nonempty_nym(prepared_accounts):
 def test_delete_issuer_nym(prepared_accounts):
     with error.expected(ReturnValueError):
         prepared_accounts.issuer.nym.delete()
+
+
+def test_check_nym():
+    me = Nym().register()
+    other = Nym().register()
+    nym.check(server.first_active_id(), me._id, other._id)
+
+
+def test_check_nym_unregistered():
+    me = Nym().register()
+    with error.expected(ReturnValueError):
+        nym.check(server.first_active_id(), me._id, Nym().create()._id)
