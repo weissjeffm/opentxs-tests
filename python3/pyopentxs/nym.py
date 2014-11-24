@@ -51,7 +51,12 @@ class Nym:
         return self
 
     def delete(self):
-        deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
+        if hasattr(opentxs, 'OTAPI_Wrap_unregisterNym'): # new api name
+            deleted = opentxs.OTAPI_Wrap_unregisterNym(self.server_id, self._id)
+        elif hasattr(opentxs, 'OTAPI_Wrap_deleteNym'): # todo: old api name, remove in due time
+            deleted = opentxs.OTAPI_Wrap_deleteNym(self.server_id, self._id)
+        else: # todo: old api name, remove in due time
+            deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
         print("deleting {} returned {}".format(self._id, deleted))
         if deleted <= 0:
             raise ReturnValueError("Unable to delete nym {}, return code {}".format(
