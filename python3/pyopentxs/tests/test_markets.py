@@ -5,7 +5,7 @@ import time
 import opentxs
 from pyopentxs import market
 
-cron_interval = 30
+cron_interval = 10
 
 
 @pytest.fixture
@@ -15,20 +15,43 @@ def marketaccounts():
     return marketaccounts
 
 
-def test_immediate_trade(marketaccounts):
+def assert_balances(*acct_balances):
+    '''Takes a tuple of (account, balance) where account is an Account
+       object and balance is the integer balance that the account is
+       expected to have.
+
+    '''
+    for (acct, bal) in acct_balances:
+        assert(acct.balance() == bal)
+
+
+@pytest.mark.parametrize(
+    "sell_quantity,sell_price,buy_quantity,buy_price,seller_exp_bal1,"
+    "seller_exp_bal2,buyer_exp_bal1,buyer_exp_bal2",
+    [[3, 7, 3, 7, 97, 121, 103, 79],  # basic
+
+     pytest.mark.skipif(True, reason="https://github.com/Open-Transactions/opentxs/issues/504")
+     ([0, 7, 3, 7, 100, 100, 100, 100]),  # order for 0 quantity is noop
+
+     [5, 20, 5, 20, 95, 200, 105, 0],  # buy w all currency
+     [100, 1, 100, 1, 0, 200, 200, 0],  # sell all
+     [100, 7, 20, 7, 86, 198, 114, 2]]  # buy limited by available funds
+)
+def test_immediate_trade(marketaccounts, sell_quantity, sell_price, buy_quantity, buy_price,
+                         seller_exp_bal1, seller_exp_bal2, buyer_exp_bal1, buyer_exp_bal2):
     '''Create two offers at the same price so that the trade should
        execute immediately.'''
     alice = marketaccounts.alice
     bob = marketaccounts.bob
 
-    market.sell(3, alice.account1, alice.account2, price=7)
-    market.buy(3, bob.account1, bob.account2, price=7)
+    market.sell(sell_quantity, alice.account1, alice.account2, price=sell_price)
+    market.buy(buy_quantity, bob.account1, bob.account2, price=buy_price)
 
     time.sleep(cron_interval)
-    assert(alice.account1.balance() == 97)
-    assert(alice.account2.balance() == 121)
-    assert(bob.account1.balance() == 103)
-    assert(bob.account2.balance() == 79)
+    assert_balances((alice.account1, seller_exp_bal1),
+                    (alice.account2, seller_exp_bal2),
+                    (bob.account1, buyer_exp_bal1),
+                    (bob.account2, buyer_exp_bal2))
 
 
 def test_bid_market_price(marketaccounts):
@@ -41,10 +64,10 @@ def test_bid_market_price(marketaccounts):
     market.buy(4, bob.account1, bob.account2, price=market.MARKET_PRICE)
 
     time.sleep(cron_interval)
-    assert(alice.account1.balance() == 96)
-    assert(alice.account2.balance() == 129)  # 3 at 7 and 1 at 8
-    assert(bob.account1.balance() == 104)
-    assert(bob.account2.balance() == 71)
+    assert_balances((alice.account1, 96),
+                    (alice.account2, 129),  # 3 at 7 and 1 at 8
+                    (bob.account1, 104),
+                    (bob.account2, 71))
 
 
 def test_ask_market_price(marketaccounts):
@@ -57,10 +80,10 @@ def test_ask_market_price(marketaccounts):
     market.sell(4, alice.account1, alice.account2, price=market.MARKET_PRICE)
 
     time.sleep(cron_interval)
-    assert(alice.account1.balance() == 96)
-    assert(alice.account2.balance() == 131)  # 3 at 8 and 1 at 7
-    assert(bob.account1.balance() == 104)
-    assert(bob.account2.balance() == 69)
+    assert_balances((alice.account1, 96),
+                    (alice.account2, 131),  # 3 at 8 and 1 at 7
+                    (bob.account1, 104),
+                    (bob.account2, 69))
 
 
 def test_market_offers_buying(marketaccounts):
