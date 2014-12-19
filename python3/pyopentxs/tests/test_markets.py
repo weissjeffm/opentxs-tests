@@ -54,36 +54,75 @@ def test_immediate_trade(marketaccounts, sell_quantity, sell_price, buy_quantity
                     (bob.account2, buyer_exp_bal2))
 
 
-def test_bid_market_price(marketaccounts):
+@pytest.mark.parametrize("sell_quantity1,sell_price1,sell_quantity2,sell_price2,"
+                         "buy_quantity,seller_exp_bal1,seller_exp_bal2,buyer_exp_bal1,"
+                         "buyer_exp_bal2",
+    [
+        # basic, buy 3 at 7 and 1 at 8
+        [3, 7, 3, 8, 4, 96, 129, 104, 71],
+
+        # market buy for exactly whole order book
+        [3, 7, 3, 8, 6, 94, 145, 106, 55],
+
+        # market buy for more than whole order book
+        [3, 7, 3, 8, 10, 94, 145, 106, 55],
+
+        # market buy for more than buyer's funds (10 at 7, 3 at 8)
+        [10, 7, 20, 8, 25, 87, 194, 113, 6]
+
+    ]
+)
+def test_bid_market_price(marketaccounts, sell_quantity1, sell_price1, sell_quantity2, sell_price2,
+                          buy_quantity, seller_exp_bal1, seller_exp_bal2, buyer_exp_bal1,
+                          buyer_exp_bal2):
     '''Test that a bid at market price takes the existing orders correctly'''
     alice = marketaccounts.alice
     bob = marketaccounts.bob
 
-    market.sell(3, alice.account1, alice.account2, price=7)
-    market.sell(3, alice.account1, alice.account2, price=8)
-    market.buy(4, bob.account1, bob.account2, price=market.MARKET_PRICE)
+    market.sell(sell_quantity1, alice.account1, alice.account2, price=sell_price1)
+    market.sell(sell_quantity2, alice.account1, alice.account2, price=sell_price2)
+    market.buy(buy_quantity, bob.account1, bob.account2, price=market.MARKET_PRICE)
 
     time.sleep(cron_interval)
-    assert_balances((alice.account1, 96),
-                    (alice.account2, 129),  # 3 at 7 and 1 at 8
-                    (bob.account1, 104),
-                    (bob.account2, 71))
+    assert_balances((alice.account1, seller_exp_bal1),
+                    (alice.account2, seller_exp_bal2),
+                    (bob.account1, buyer_exp_bal1),
+                    (bob.account2, buyer_exp_bal2))
 
 
-def test_ask_market_price(marketaccounts):
-    '''Test that an ask at market price takes the existing orders correctly'''
+@pytest.mark.parametrize("buy_quantity1,buy_price1,buy_quantity2,buy_price2,sell_quantity,"
+                         "seller_exp_bal1,seller_exp_bal2,buyer_exp_bal1,buyer_exp_bal2",
+    [
+        # basic, sell 3 at 8 and 1 at 7
+        [3, 7, 3, 8, 4, 96, 131, 104, 69],
+
+        # market sell for exactly whole order book
+        [3, 7, 3, 8, 6, 94, 145, 106, 55],
+
+        # market sell for more than whole order book
+        [3, 7, 3, 8, 10, 94, 145, 106, 55],
+
+        # market sell for more than buyer's funds (10 at 8, 2 at 7)
+        [20, 7, 10, 8, 25, 88, 194, 112, 6]
+
+    ]
+)
+def test_ask_market_price(marketaccounts, buy_quantity1, buy_price1, buy_quantity2, buy_price2,
+                          sell_quantity, seller_exp_bal1, seller_exp_bal2, buyer_exp_bal1,
+                          buyer_exp_bal2):
+    '''Test that a ask at market price takes the existing orders correctly'''
     alice = marketaccounts.alice
     bob = marketaccounts.bob
 
-    market.buy(3, bob.account1, bob.account2, price=7)
-    market.buy(3, bob.account1, bob.account2, price=8)
-    market.sell(4, alice.account1, alice.account2, price=market.MARKET_PRICE)
+    market.buy(buy_quantity1, alice.account1, alice.account2, price=buy_price1)
+    market.buy(buy_quantity2, alice.account1, alice.account2, price=buy_price2)
+    market.sell(sell_quantity, bob.account1, bob.account2, price=market.MARKET_PRICE)
 
     time.sleep(cron_interval)
-    assert_balances((alice.account1, 96),
-                    (alice.account2, 131),  # 3 at 8 and 1 at 7
-                    (bob.account1, 104),
-                    (bob.account2, 69))
+    assert_balances((alice.account1, buyer_exp_bal1),
+                    (alice.account2, buyer_exp_bal2),
+                    (bob.account1, seller_exp_bal1),
+                    (bob.account2, seller_exp_bal2))
 
 
 def test_market_offers_buying(marketaccounts):
