@@ -203,3 +203,81 @@ def test_market_offers_selling(marketaccounts):
     assert '3' == c.available_assets
     assert '1' == c.minimum_increment
 #    assert '' == c.date
+
+
+def test_get_nym_market_offers_selling(marketaccounts):
+    alice = marketaccounts.alice
+    bob = marketaccounts.bob
+    server_id = bob.account1.server_id
+
+    market.sell(3, bob.account1, bob.account2, price=7)
+
+    time.sleep(cron_interval)
+
+    message = pyopentxs.otme.get_nym_market_offers(server_id, bob.nym._id)
+    assert pyopentxs.is_message_success(message)
+
+    obj = opentxs.QueryObject(opentxs.STORED_OBJ_OFFER_LIST_NYM, "nyms", server_id,
+                              bob.nym._id + ".bin")
+    offerList = opentxs.OfferListNym_ot_dynamic_cast(obj)
+    assert 1 == offerList.GetOfferDataNymCount()
+    
+    c = offerList.GetOfferDataNym(0)
+
+    assert "" == c.gui_label
+#    assert "" == c.valid_from
+#    assert "" == c.valid_to
+    assert server_id == c.notary_id
+    assert bob.account1.asset._id == c.instrument_definition_id
+    assert bob.account1._id == c.asset_acct_id
+    assert bob.account2.asset._id == c.currency_type_id
+    assert bob.account2._id == c.currency_acct_id
+    assert True == c.selling
+    assert "1" == c.scale
+    assert "7" == c.price_per_scale
+#    assert "" == c.transaction_id
+    assert "3" == c.total_assets
+    assert "0" == c.finished_so_far
+    assert "1" == c.minimum_increment
+    assert "" == c.stop_sign
+    assert "0" == c.stop_price
+#    assert "" == c.date
+
+
+def test_get_nym_market_offers_buying(marketaccounts):
+    alice = marketaccounts.alice
+    bob = marketaccounts.bob
+    server_id = bob.account1.server_id
+
+    market.buy(3, bob.account1, bob.account2, price=7)
+
+    time.sleep(cron_interval)
+
+    message = pyopentxs.otme.get_nym_market_offers(server_id, bob.nym._id)
+    assert pyopentxs.is_message_success(message)
+
+    obj = opentxs.QueryObject(opentxs.STORED_OBJ_OFFER_LIST_NYM, "nyms", server_id,
+                              bob.nym._id + ".bin")
+    offerList = opentxs.OfferListNym_ot_dynamic_cast(obj)
+    assert 1 == offerList.GetOfferDataNymCount()
+    
+    c = offerList.GetOfferDataNym(0)
+
+    assert "" == c.gui_label
+#    assert "" == c.valid_from
+#    assert "" == c.valid_to
+    assert server_id == c.notary_id
+    assert bob.account1.asset._id == c.instrument_definition_id
+    assert bob.account1._id == c.asset_acct_id
+    assert bob.account2.asset._id == c.currency_type_id
+    assert bob.account2._id == c.currency_acct_id
+    assert False == c.selling
+    assert "1" == c.scale
+    assert "7" == c.price_per_scale
+#    assert "" == c.transaction_id
+    assert "3" == c.total_assets
+    assert "0" == c.finished_so_far
+    assert "1" == c.minimum_increment
+    assert "" == c.stop_sign
+    assert "0" == c.stop_price
+#    assert "" == c.date
