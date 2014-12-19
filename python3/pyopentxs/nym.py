@@ -47,7 +47,6 @@ class Nym:
             self.create()
         message = otme.register_nym(server_id, self._id)
         assert is_message_success(message)
-        print(message)
         return self
 
     def delete(self):
@@ -57,7 +56,6 @@ class Nym:
             deleted = opentxs.OTAPI_Wrap_deleteNym(self.server_id, self._id)
         else:  # todo: old api name, remove in due time
             deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
-        print("deleting {} returned {}".format(self._id, deleted))
         if deleted <= 0:
             raise ReturnValueError("Unable to delete nym {}, return code {}".format(
                 self._id, deleted))

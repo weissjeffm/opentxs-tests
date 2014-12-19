@@ -4,7 +4,6 @@ import opentxs
 
 from bs4 import BeautifulSoup
 from pyopentxs import otme
-import re
 
 
 class Account:
@@ -24,17 +23,17 @@ class Account:
         if s.registeraccountresponse:
             self._id = s.registeraccountresponse['accountid']
             return self
-            
+
         # todo: old message name, remove in due time.
         if s.createaccountresponse:
             self._id = s.createaccountresponse['accountid']
             return self
 
         raise ReturnValueError("No account id present in response, account not created.")
-        
+
     def delete(self):
         deleted = opentxs.OTAPI_Wrap_deleteAssetAccount(self.server_id, self.nym._id, self._id)
-        print("deleting {} returned {}".format(self._id, deleted))
+        # print("deleting {} returned {}".format(self._id, deleted))
         assert deleted > 0, "Unable to delete account {}, return code {}".format(self._id, deleted)
 
     def balance(self):
@@ -42,10 +41,10 @@ class Account:
         refresh local account files from server and return account balance
         """
         assert self._id, "Account must be created first."
-        
-        if hasattr(opentxs, 'OTAPI_Wrap_getAccountData'): # new api name
+
+        if hasattr(opentxs, 'OTAPI_Wrap_getAccountData'):  # new api name
             res = opentxs.OTAPI_Wrap_getAccountData(self.server_id, self.nym._id, self._id)
-        else: # todo: old api name, remove in due time
+        else:  # todo: old api name, remove in due time
             res = opentxs.OTAPI_Wrap_getAccountFiles(self.server_id, self.nym._id, self._id)
         if res < 0:
             raise ReturnValueError(res)

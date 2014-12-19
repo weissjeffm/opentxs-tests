@@ -6,7 +6,6 @@ from pyopentxs.account import Account
 from datetime import datetime, timedelta
 from pyopentxs.instrument import transfer, write
 from pyopentxs.tests import data
-import opentxs
 
 # def test_check_server_id():
 #     nym_id = pyopentxs.create_nym()

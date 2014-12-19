@@ -53,7 +53,7 @@ def check_id(server_id, user_id):
     else: # todo: old api name, remove in due time
         retval = opentxs.OTAPI_Wrap_checkServerID(server_id, user_id)
 
-    print("(debug) check_server_id retval=", retval)
+    # print("(debug) check_server_id retval=", retval)
 
     # The return value `1` for success is defined by
     #     case (OTClient::checkServerId)
