@@ -6,6 +6,8 @@ from bs4 import BeautifulSoup
 import io
 import os
 import shutil
+import psutil
+import configparser
 
 
 def make_server_contract(contract, server_nym):
@@ -80,3 +82,34 @@ def setup(contract_stream, total_servers=1):
             make_server_contract(contract, nym.Nym().create())[2])
 
     return output
+
+
+def restart():
+    pyopentxs.cleanup()
+
+    # kill existing processes
+    for proc in psutil.process_iter():
+        if proc.name() == "opentxs-notary":
+            proc.kill()
+            psutil.wait_procs([proc], timeout=10)
+
+    # start
+    pyopentxs.init()
+
+
+class Config:
+    def __init__(self, filename=None):
+        self.filename = filename or pyopentxs.config_dir + "server.cfg"
+
+    def read(self):
+        '''Retrieves the server config file and parses it'''
+        self.parser = configparser.ConfigParser()
+        self.parser.read(pyopentxs.config_dir + "server.cfg")
+        return self.parser
+
+    def write(self):
+        f = open(self.filename, 'w')
+        self.parser.write(f)
+        f.close()
+
+config = Config()
