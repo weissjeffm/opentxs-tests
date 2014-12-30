@@ -4,9 +4,11 @@ import pytest
 import time
 import opentxs
 from pyopentxs import market
+from pyopentxs import notary
 
-cron_interval = 10
-
+notary.config.read()
+cron_interval = int(int(notary.config.parser['cron']['ms_between_cron_beats']) / 1000)
+print("set cron interval to %s" % cron_interval)
 
 @pytest.fixture
 def marketaccounts():
