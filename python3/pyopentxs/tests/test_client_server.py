@@ -261,15 +261,36 @@ def test_withdraw_voucher_to_unregistered_nym(prepared_accounts, recipient_is_bl
     prepared_accounts.assert_balances(-100, 50, 0)
 
 
-def test_auditor_traffic():
-    '''Test that generates specific traffic for the auditor.
-    see https://docs.google.com/a/monetas.net/\
-    document/d/1q9LxqSaywjM_20uGfl5msL-EFWkxxaotbZpI9c0zhAE/edit#
-    '''
-    # alice = Nym().register()
-    # opentxs.OTAPI_Wrap_getRequest()
-    # wip
+# def test_auditor_traffic():
+#     '''Test that generates specific traffic for the auditor.
+#     see https://docs.google.com/a/monetas.net/\
+#     document/d/1q9LxqSaywjM_20uGfl5msL-EFWkxxaotbZpI9c0zhAE/edit#
+#     '''
+#     alice = Nym().register()
+#     opentxs.OTAPI_Wrap_getRequest()
+#     asset = Asset().issue(alice, open(data.btc_contract_file),
+#                           alice.server_id)
+#     alice_issuer_account = asset.issuer_account
+#     downloaded = opentxs.OTAPI_Wrap_getAccountFiles(
+#         alice.server_id,
+#         alice._id,
+#         alice_issuer_account._id
+#     )
+#     if downloaded < 0:
+#         raise ReturnValueError(
+#             "Could not get accountFiles, returned {}".format(downloaded))
+#     txnum = opentxs.OTAPI_Wrap_getTransactionNumber(alice.server_id,
+#                                                     alice._id)
+#     gotnymbox = opentxs.OTAPI_Wrap_getNymbox(alice.server_id,
+#                                              alice._id)
+#     if downloaded < 0:
+#         raise ReturnValueError("Couldn't get nymbox, returned {}".format(gotnymbox))
 
+#     boxreceipt = opentxs.OTAPI_Wrap_getBoxReceipt(
+#         alice.server_id,
+#         alice._id,
+#         alice_issuer_account._id,
+#     )
 
 @pytest.mark.parametrize("amount,should_pass",
                          [[-10, True],
@@ -289,3 +310,16 @@ def test_invoice(prepared_accounts, amount, should_pass):
     prepared_accounts.assert_balances(-100,
                                       100 + amount if should_pass else 100,
                                       -amount if should_pass else 0)
+
+
+@pytest.mark.parametrize("amount",
+                         [10, 2 ** 63 - 100 - 1, -10, -100])
+def test_issuer_bidirectional(prepared_accounts, amount):
+    '''Test a cheque and then an invoice for the same amount, from issuer
+    to source (or the other way around)'''
+    first_transfer = new_cheque(prepared_accounts.issuer, prepared_accounts.source, amount)
+    transfer(first_transfer, prepared_accounts.issuer, prepared_accounts.source)
+    prepared_accounts.assert_balances(-100 - amount, 100 + amount, 0)
+    second_transfer = new_cheque(prepared_accounts.issuer, prepared_accounts.source, -amount)
+    transfer(second_transfer, prepared_accounts.issuer, prepared_accounts.source)
+    prepared_accounts.assert_balances(-100, 100, 0)

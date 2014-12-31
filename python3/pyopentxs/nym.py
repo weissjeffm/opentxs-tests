@@ -47,12 +47,15 @@ class Nym:
             self.create()
         message = otme.register_nym(server_id, self._id)
         assert is_message_success(message)
-        print(message)
         return self
 
     def delete(self):
-        deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
-        print("deleting {} returned {}".format(self._id, deleted))
+        if hasattr(opentxs, 'OTAPI_Wrap_unregisterNym'):  # new api name
+            deleted = opentxs.OTAPI_Wrap_unregisterNym(self.server_id, self._id)
+        elif hasattr(opentxs, 'OTAPI_Wrap_deleteNym'):  # todo: old api name, remove in due time
+            deleted = opentxs.OTAPI_Wrap_deleteNym(self.server_id, self._id)
+        else:  # todo: old api name, remove in due time
+            deleted = opentxs.OTAPI_Wrap_deleteUserAccount(self.server_id, self._id)
         if deleted <= 0:
             raise ReturnValueError("Unable to delete nym {}, return code {}".format(
                 self._id, deleted))
@@ -94,7 +97,7 @@ def get_all():
     return nyms
 
 
-def check_user(server, nym, target_nym):
-    # TODO
-    # see ot wiki "API" / "Write a checkque"
-    return otme.check_user(server, nym, target_nym)
+def check(server, nym, target_nym):
+    checked = otme.check_nym(server, nym, target_nym)
+    if checked == "":
+        raise ReturnValueError("Could not check nym {} as {}".format(target_nym, nym))

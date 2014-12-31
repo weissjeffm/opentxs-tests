@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import shutil
-import psutil
 import os
 import sys
 import pytest
@@ -22,14 +21,14 @@ def create_fresh_ot_config():
     p = subprocess.Popen(["opentxs-notary", "--only-init"], stdin=subprocess.PIPE)
     outs, errs = p.communicate(input=setup_data.getvalue(), timeout=20)
 
+    # set cron interval to shorter than default
+    config_data = notary.config.read()
+    config_data['cron']['ms_between_cron_beats'] = '2500'  # in milliseconds
+    notary.config.write()
+
 
 def restart_opentxs_notary():
     '''opentxs-notary must be on the PATH'''
-    # kill existing processes
-    for proc in psutil.process_iter():
-        if proc.name() == "opentxs-notary":
-            proc.kill()
-            psutil.wait_procs([proc], timeout=10)
 
     create_fresh_ot_config()
 
@@ -39,6 +38,12 @@ def restart_opentxs_notary():
     # wait for ready
     # doesn't seem to be necessary
     # time.sleep(2)
+
+
+def fresh_setup():
+    restart_opentxs_notary()
+    pyopentxs.init()
+
 
 if __name__ == "__main__":
     restart_opentxs_notary()

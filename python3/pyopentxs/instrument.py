@@ -47,7 +47,7 @@ class Cheque:
             self.write()
         result = otme.deposit_cheque(self.server_id, depositor_nym._id,
                                      depositor_account._id, self._body)
-        print("Deposit: %s" % result)
+        # print("Deposit: %s" % result)
         assert is_message_success(result)
         # otme.accept_inbox_items(depositor_account._id, 0, "")
         return result
@@ -125,7 +125,7 @@ class Voucher:
 
 def send_transfer(server_id=None, acct_from=None, acct_to=None, note=None, amount=None):
     server_id = server_id or server.first_id()
-    print("transferring {} from {} to {} on {}".format(amount, acct_from, acct_to, server_id))
+    # print("transferring {} from {} to {} on {}".format(amount, acct_from, acct_to, server_id))
     message = otme.send_transfer(server_id, acct_from.nym._id, acct_from._id,
                                  acct_to._id, amount, note)
     assert is_message_success(message)
