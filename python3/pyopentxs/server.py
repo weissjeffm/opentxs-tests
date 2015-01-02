@@ -1,4 +1,5 @@
 import opentxs
+import re
 
 # the ids of the notaries we know we should be able to contact
 active = []
@@ -78,3 +79,10 @@ def first_inactive_id():
         if s[0] not in active:
             return s[0]
     return None
+
+
+def nym_id(server_id):
+    '''Return the id of the nym that signed the server contract'''
+    contract = opentxs.OTAPI_Wrap_GetServer_Contract(server_id)
+    p = re.compile('.*nymID=\"([0-9A-Za-z]+)\".*', re.DOTALL)
+    return p.match(contract).group(1)

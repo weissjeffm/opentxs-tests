@@ -27,26 +27,19 @@ def create_fresh_ot_config():
     notary.config.write()
 
 
-def restart_opentxs_notary():
+def fresh_setup():
     '''opentxs-notary must be on the PATH'''
 
     create_fresh_ot_config()
-
-    # start new
-    os.system("opentxs-notary > opentxs-notary.log 2>&1 &")
-
+    print("created fresh config, restarting...")
+    notary.restart()
+    print("restarted.")
     # wait for ready
     # doesn't seem to be necessary
     # time.sleep(2)
 
 
-def fresh_setup():
-    restart_opentxs_notary()
-    pyopentxs.init()
-
-
 if __name__ == "__main__":
-    restart_opentxs_notary()
-    pyopentxs.init()
+    fresh_setup()
     pytest.main(sys.argv[1:])
     pyopentxs.cleanup()
