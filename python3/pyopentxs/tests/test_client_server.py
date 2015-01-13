@@ -237,6 +237,14 @@ class TestChequeTransfer:
         c.deposit(unreg_nym, new_acct)
         prepared_accounts.assert_balances(-100, 50, 0)
 
+    def test_send_cheque(self, prepared_accounts):
+        amount = 10
+        cheque = new_cheque(prepared_accounts.source, prepared_accounts.target, amount)
+        result = cheque.send()
+        assert result, "failed to send cheque"
+        cheque.deposit(prepared_accounts.target.nym,prepared_accounts.target)
+        prepared_accounts.assert_balances(-100, 100 - amount , amount )
+
 
 @pytest.mark.parametrize("recipient_is_blank",
                          [pytest.mark.skipif(
