@@ -242,10 +242,8 @@ class TestChequeTransfer:
         cheque = new_cheque(prepared_accounts.source, prepared_accounts.target, amount)
         result = cheque.send()
         assert result, "failed to send cheque"
-        if result:
-            cheque.deposit(prepared_accounts.target.nym,prepared_accounts.target)
-        prepared_accounts.assert_balances(-100, 100 - amount if result else 100,
-                                      amount if result else 0)
+        cheque.deposit(prepared_accounts.target.nym,prepared_accounts.target)
+        prepared_accounts.assert_balances(-100, 100 - amount , amount )
 
 
 @pytest.mark.parametrize("recipient_is_blank",
