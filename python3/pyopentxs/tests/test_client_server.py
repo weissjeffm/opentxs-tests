@@ -6,6 +6,7 @@ from pyopentxs.account import Account
 from datetime import datetime, timedelta
 from pyopentxs.instrument import transfer, write
 from pyopentxs.tests import data
+from pyopentxs import cash
 
 # def test_check_server_id():
 #     nym_id = pyopentxs.create_nym()
@@ -44,6 +45,10 @@ def new_transfer(source, target, amount):
     return amount
 
 
+def new_cash(_, __, amount):
+    return instrument.Cash(amount)
+
+
 @pytest.fixture()
 def prepared_accounts(request):
     accts = data.TransferAccounts()
@@ -62,15 +67,26 @@ class TestGenericTransfer:
             (2 ** 63 - 1, False),
             (-(2 ** 63), False),
         ]
-        instrument_data = [new_cheque,
-                           new_voucher,
-                           new_transfer]
+        instrument_data = [
+            new_cheque,
+            new_voucher,
+            new_transfer,
+            new_cash
+        ]
         metafunc.parametrize("amount,should_pass", argvalues=transfer_amount_data)
         metafunc.parametrize("instrument_constructor", argvalues=instrument_data)
 
     def test_simple_transfer(self, prepared_accounts, amount, should_pass, instrument_constructor):
         instrument = instrument_constructor(
             prepared_accounts.source, prepared_accounts.target, amount)
+
+        if instrument_constructor == new_cash:
+            # skip if testing with large amount
+            if amount > 1000:
+                pytest.skip("https://github.com/Open-Transactions/opentxs/issues/536")
+            # make sure there's a mint created for this asset
+            cash.create_mint(prepared_accounts.asset)
+
         with error.expected(None if should_pass else ReturnValueError):
             transfer(instrument, prepared_accounts.source, prepared_accounts.target)
         if should_pass:
@@ -242,8 +258,8 @@ class TestChequeTransfer:
         cheque = new_cheque(prepared_accounts.source, prepared_accounts.target, amount)
         result = cheque.send()
         assert result, "failed to send cheque"
-        cheque.deposit(prepared_accounts.target.nym,prepared_accounts.target)
-        prepared_accounts.assert_balances(-100, 100 - amount , amount )
+        cheque.deposit(prepared_accounts.target.nym, prepared_accounts.target)
+        prepared_accounts.assert_balances(-100, 100 - amount, amount)
 
 
 @pytest.mark.parametrize("recipient_is_blank",

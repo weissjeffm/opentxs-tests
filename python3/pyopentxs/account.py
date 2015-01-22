@@ -50,6 +50,16 @@ class Account:
             raise ReturnValueError(res)
         return opentxs.OTAPI_Wrap_GetAccountWallet_Balance(self._id)
 
+    def accept_payments(self, indices=None):
+        otme.retrieve_nym(self.server_id, self.nym._id)
+        if not indices:
+            # build a list of indices
+            ledger = opentxs.OTAPI_Wrap_LoadPaymentInbox(self.server_id, self.nym._id)
+            payment_count = opentxs.OTAPI_Wrap_Ledger_GetCount(self.server_id, self.nym._id,
+                                                           self._id, ledger)
+            indices = list(map(str, range(payment_count)))
+        otme.accept_from_paymentbox(self._id, ",".join(indices), "")
+
     def __repr__(self):
         return "<Account id={}, asset={}, nym={}, server_id={}>".format(
             self._id, self.asset, self.nym, self.server_id)

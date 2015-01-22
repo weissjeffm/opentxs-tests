@@ -128,6 +128,44 @@ class Voucher:
             self, outpayments_count))
 
 
+class Cash:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def withdraw(self, account, amount=None, nym=None, server_id=None):
+        # get the public mint file on the client side
+        nym_id = (nym and nym._id) or account.nym._id
+        server_id = server_id or account.server_id
+        opentxs.OTAPI_Wrap_getMint(server_id, nym_id, account.asset._id)
+
+        self.purse = otme.withdraw_cash(server_id,
+                                        nym_id,
+                                        account._id,
+                                        amount or self.amount)
+        print("Withdrew cash: %s" % self.purse)
+        if self.purse == '':
+            raise ReturnValueError("Unable to withdraw cash: {} from {}.".format(
+                amount or self.amount, account._id))
+
+    def deposit(self, account, purse=None, nym=None, server_id=None):
+        output = otme.deposit_cash(server_id or account.server_id,
+                                   (nym and nym._id) or account.nym._id,
+                                   account._id,
+                                   purse or self.purse)
+        if output == "":
+            raise ReturnValueError("Unable to deposit cash: {} from {}.".format(
+                self.amount, account._id))
+
+    def send(self, account, amount=None, nym=None, server_id=None):
+        nym_id = (nym and nym._id) or account.nym._id
+        server_id = server_id or account.server_id
+        opentxs.OTAPI_Wrap_getMint(server_id, nym_id, account.asset._id)
+        sent = otme.withdraw_and_send_cash(account._id, nym_id, amount or self.amount)
+        if not sent:
+            raise ReturnValueError("Unable to send cash: {} from {}.".format(
+                self.amount, account._id))
+
+
 def send_transfer(server_id=None, acct_from=None, acct_to=None, note=None, amount=None):
     server_id = server_id or server.first_id()
     # print("transferring {} from {} to {} on {}".format(amount, acct_from, acct_to, server_id))
@@ -174,3 +212,11 @@ def transfer_voucher(voucher, source_acct, target_acct):
     '''Transfer funds by creating and depositing a voucher'''
     voucher.withdraw()
     return voucher.deposit(target_acct.nym, target_acct)
+
+
+@transfer.method(Cash)
+def transfer_cash(cash, source_acct, target_acct):
+    '''Transfer funds by withdrawing cash, passing the purse and depositing it'''
+    cash.send(source_acct, nym=target_acct.nym)
+    # cash.deposit(target_acct)
+    target_acct.accept_payments()
