@@ -1,4 +1,5 @@
 import pyopentxs
+from pyopentxs.tests import data
 import pytest
 
 
@@ -10,3 +11,10 @@ def initialize_pyopentxs():
 
     '''
     pyopentxs.init()
+
+
+@pytest.fixture()
+def prepared_accounts(request):
+    accts = data.TransferAccounts()
+    accts.initial_balance()
+    return accts
