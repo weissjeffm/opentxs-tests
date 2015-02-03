@@ -129,8 +129,9 @@ class Voucher:
 
 
 class Cash:
-    def __init__(self, amount):
+    def __init__(self, amount, purse=None):
         self.amount = amount
+        self.purse = purse
 
     def withdraw(self, account, amount=None, nym=None, server_id=None):
         # get the public mint file on the client side
@@ -148,13 +149,14 @@ class Cash:
                 amount or self.amount, account._id))
 
     def deposit(self, account, purse=None, nym=None, server_id=None):
-        output = otme.deposit_cash(server_id or account.server_id,
-                                   (nym and nym._id) or account.nym._id,
-                                   account._id,
-                                   purse or self.purse)
-        if output == "":
-            raise ReturnValueError("Unable to deposit cash: {} from {}.".format(
+        deposited = otme.deposit_cash(server_id or account.server_id,
+                                      (nym and nym._id) or account.nym._id,
+                                      account._id,
+                                      purse or self.purse)
+        if not deposited:
+            ReturnValueError("Unable to deposit cash: {} from {}.".format(
                 self.amount, account._id))
+        return deposited
 
     def send(self, account, amount=None, nym=None, server_id=None):
         nym_id = (nym and nym._id) or account.nym._id
@@ -164,6 +166,22 @@ class Cash:
         if not sent:
             raise ReturnValueError("Unable to send cash: {} from {}.".format(
                 self.amount, account._id))
+        return sent
+
+    def export(self, account, nym=None, amount=None):
+        """Returns an exported cash purse string, which can be imported later.
+           nym = the nym to export the cash to (encrypted to his public key)"""
+        nym_id = (nym and nym._id) or account.nym._id
+        withdrawn = otme.easy_withdraw_cash(account._id, amount or self.amount)
+        if not withdrawn:
+            raise ReturnValueError("Unable to withdraw cash: {} from {}".format(
+                self.amount, account._id))
+        self.purse = otme.export_cash(account.server_id,
+                                      account.nym._id,
+                                      account.asset._id,
+                                      nym_id,
+                                      "0",
+                                      False)[0]
 
 
 def send_transfer(server_id=None, acct_from=None, acct_to=None, note=None, amount=None):

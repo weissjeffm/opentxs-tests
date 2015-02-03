@@ -49,13 +49,6 @@ def new_cash(_, __, amount):
     return instrument.Cash(amount)
 
 
-@pytest.fixture()
-def prepared_accounts(request):
-    accts = data.TransferAccounts()
-    accts.initial_balance()
-    return accts
-
-
 class TestGenericTransfer:
     def pytest_generate_tests(self, metafunc):
         transfer_amount_data = [
