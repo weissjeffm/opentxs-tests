@@ -154,7 +154,7 @@ class Cash:
                                       account._id,
                                       purse or self.purse)
         if not deposited:
-            ReturnValueError("Unable to deposit cash: {} from {}.".format(
+            raise ReturnValueError("Unable to deposit cash: {} from {}.".format(
                 self.amount, account._id))
         return deposited
 
@@ -176,12 +176,15 @@ class Cash:
         if not withdrawn:
             raise ReturnValueError("Unable to withdraw cash: {} from {}".format(
                 self.amount, account._id))
-        self.purse = otme.export_cash(account.server_id,
-                                      account.nym._id,
-                                      account.asset._id,
-                                      nym_id,
-                                      "0",
-                                      False)[0]
+        purses = otme.export_cash(account.server_id,
+                                  account.nym._id,
+                                  account.asset._id,
+                                  nym_id,
+                                  "0",
+                                  False)
+        self.purse = purses[0]
+        self.backup_purse = purses[1]
+        return self.purse
 
 
 def send_transfer(server_id=None, acct_from=None, acct_to=None, note=None, amount=None):
