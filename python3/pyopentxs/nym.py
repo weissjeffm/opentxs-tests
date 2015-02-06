@@ -81,6 +81,10 @@ class Nym:
     def __repr__(self):
         return "<Nym id={}, server_id={}>".format(self._id, self.server_id)
 
+    def __eq__(self, other):
+        '''This nym is the same value as another, if the ids are equal'''
+        return self._id == other._id
+
 
 def get_all():
     """
