@@ -68,8 +68,10 @@ class Cheque:
     def send(self):
         if not self._body:
             self.write()
-        result = otme.send_user_payment(self.server_id, self.sender_nym._id, self.recipient_nym._id, self._body)
+        result = otme.send_user_payment(self.server_id, self.sender_nym._id, self.recipient_nym._id,
+                                        self._body)
         return is_message_success(result)
+
 
 class Voucher:
     def __init__(self, server_id, amount, sender_account, sender_nym, memo, recipient_nym):

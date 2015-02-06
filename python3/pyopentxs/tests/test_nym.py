@@ -1,7 +1,6 @@
 from pyopentxs.nym import Nym
 from pyopentxs.tests import data
 from pyopentxs import error, nym, ReturnValueError, server
-import pyopentxs
 import pytest
 
 

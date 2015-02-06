@@ -2,7 +2,6 @@ from pyopentxs.nym import Nym
 from pyopentxs.asset import Asset
 from pyopentxs.account import Account
 from pyopentxs.instrument import transfer
-import pytest
 
 btc_contract_file = "../test-data/sample-contracts/btc.xml"
 silver_contract_file = "../test-data/sample-contracts/silver.xml"
@@ -73,4 +72,3 @@ class MarketAccounts:
         transfer(balance, self.asset2.issuer_account, self.bob.account2)
         transfer(balance, self.asset2.issuer_account, self.charlie.account2)
         return self
-

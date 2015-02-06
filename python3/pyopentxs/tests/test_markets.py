@@ -247,7 +247,7 @@ def test_market_offers_selling(marketaccounts):
 
 
 def test_get_nym_market_offers_selling(marketaccounts):
-    alice = marketaccounts.alice
+    # alice = marketaccounts.alice
     bob = marketaccounts.bob
     server_id = bob.account1.server_id
 
@@ -262,12 +262,12 @@ def test_get_nym_market_offers_selling(marketaccounts):
                               bob.nym._id + ".bin")
     offerList = opentxs.OfferListNym_ot_dynamic_cast(obj)
     assert 1 == offerList.GetOfferDataNymCount()
-    
+
     c = offerList.GetOfferDataNym(0)
 
     assert "" == c.gui_label
-#    assert "" == c.valid_from
-#    assert "" == c.valid_to
+    # assert "" == c.valid_from
+    # assert "" == c.valid_to
     assert server_id == c.notary_id
     assert bob.account1.asset._id == c.instrument_definition_id
     assert bob.account1._id == c.asset_acct_id
@@ -276,17 +276,17 @@ def test_get_nym_market_offers_selling(marketaccounts):
     assert True == c.selling
     assert "1" == c.scale
     assert "7" == c.price_per_scale
-#    assert "" == c.transaction_id
+    # assert "" == c.transaction_id
     assert "3" == c.total_assets
     assert "0" == c.finished_so_far
     assert "1" == c.minimum_increment
     assert "" == c.stop_sign
     assert "0" == c.stop_price
-#    assert "" == c.date
+    # assert "" == c.date
 
 
 def test_get_nym_market_offers_buying(marketaccounts):
-    alice = marketaccounts.alice
+    # alice = marketaccounts.alice
     bob = marketaccounts.bob
     server_id = bob.account1.server_id
 
@@ -301,12 +301,12 @@ def test_get_nym_market_offers_buying(marketaccounts):
                               bob.nym._id + ".bin")
     offerList = opentxs.OfferListNym_ot_dynamic_cast(obj)
     assert 1 == offerList.GetOfferDataNymCount()
-    
+
     c = offerList.GetOfferDataNym(0)
 
     assert "" == c.gui_label
-#    assert "" == c.valid_from
-#    assert "" == c.valid_to
+    # assert "" == c.valid_from
+    # assert "" == c.valid_to
     assert server_id == c.notary_id
     assert bob.account1.asset._id == c.instrument_definition_id
     assert bob.account1._id == c.asset_acct_id
@@ -315,10 +315,10 @@ def test_get_nym_market_offers_buying(marketaccounts):
     assert False == c.selling
     assert "1" == c.scale
     assert "7" == c.price_per_scale
-#    assert "" == c.transaction_id
+    # assert "" == c.transaction_id
     assert "3" == c.total_assets
     assert "0" == c.finished_so_far
     assert "1" == c.minimum_increment
     assert "" == c.stop_sign
     assert "0" == c.stop_price
-#    assert "" == c.date
+    # assert "" == c.date

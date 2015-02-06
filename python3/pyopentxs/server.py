@@ -49,9 +49,9 @@ def check_id(server_id, user_id):
     # be called after wallet initialized. However a remote account on the server
     # is required.
 
-    if hasattr(opentxs, 'OTAPI_Wrap_pingNotary'): # new api name
+    if hasattr(opentxs, 'OTAPI_Wrap_pingNotary'):  # new api name
         retval = opentxs.OTAPI_Wrap_pingNotary(server_id, user_id)
-    else: # todo: old api name, remove in due time
+    else:  # todo: old api name, remove in due time
         retval = opentxs.OTAPI_Wrap_checkServerID(server_id, user_id)
 
     # print("(debug) check_server_id retval=", retval)
