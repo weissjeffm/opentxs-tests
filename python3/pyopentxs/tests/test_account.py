@@ -3,6 +3,7 @@ from pyopentxs.asset import Asset
 from pyopentxs import account, error, ReturnValueError, server
 from pyopentxs.tests import data
 import pytest
+import opentxs
 
 
 @pytest.fixture(scope='function')
@@ -11,6 +12,11 @@ def an_account():
     nym = Nym().register()
     asset = Asset().issue(nym, open(data.btc_contract_file))
     return account.Account(asset, Nym().register())
+
+
+@pytest.fixture(scope='function')
+def an_asset():
+    return Asset().issue(Nym().register(), open(data.btc_contract_file))
 
 
 def test_create_account(an_account):
@@ -29,6 +35,30 @@ def test_account_nym_not_registered():
 def test_asset_nym_not_registered():
     with error.expected(ReturnValueError):
         Asset().issue(Nym().create(), open(data.btc_contract_file))
+
+
+def test_asset_count_increments():
+    then = opentxs.OTAPI_Wrap_GetAssetTypeCount()
+    Asset().issue(Nym().register(), open(data.btc_contract_file))
+    now = opentxs.OTAPI_Wrap_GetAssetTypeCount()
+    assert then + 1 == now
+
+
+def test_asset_id_retrievable(an_asset):
+    num_assets = opentxs.OTAPI_Wrap_GetAssetTypeCount()
+    ids = [opentxs.OTAPI_Wrap_GetAssetType_ID(i) for i in range(num_assets)]
+    assert an_asset._id in set(ids)
+
+
+def test_asset_attributes_retrievable(an_asset):
+    assert opentxs.OTAPI_Wrap_GetAssetType_Name(an_asset._id) == "Bitcoins"
+    assert opentxs.OTAPI_Wrap_GetAssetType_TLA(an_asset._id) == "BTC"
+
+
+def test_asset_attributes_nonexistent_id():
+    """Ensure empty return value if asset id not found"""
+    assert opentxs.OTAPI_Wrap_GetAssetType_Name("foo") == ""
+    assert opentxs.OTAPI_Wrap_GetAssetType_TLA("bar") == ""
 
 
 def test_two_assets_same_nym_and_contract():
@@ -58,3 +88,36 @@ def test_create_account_nonexistent_asset():
 def test_delete_account(an_account):
     an_account.create()
     an_account.delete()
+
+
+def test_account_count_increments(an_account):
+    then = opentxs.OTAPI_Wrap_GetAccountCount()
+    an_account.create()
+    now = opentxs.OTAPI_Wrap_GetAccountCount()
+    assert then + 1 == now
+
+
+def test_account_asset_id_retrievable(an_account):
+    an_account.create()
+    asset_id = opentxs.OTAPI_Wrap_GetAccountWallet_InstrumentDefinitionID(an_account._id)
+    assert asset_id == an_account.asset._id
+
+
+def test_account_data_retrievable(an_account):
+    an_account.name = "my foo account"
+    an_account.create()
+    internal_name = opentxs.OTAPI_Wrap_GetAccountWallet_Name(an_account._id)
+    assert an_account.name == internal_name
+    notary_id = opentxs.OTAPI_Wrap_GetAccountWallet_NotaryID(an_account._id)
+    assert notary_id == an_account.server_id
+    nym_id = opentxs.OTAPI_Wrap_GetAccountWallet_NymID(an_account._id)
+    assert nym_id == an_account.nym._id
+    acct_type = opentxs.OTAPI_Wrap_GetAccountWallet_Type(an_account._id)
+    assert acct_type == "simple"
+
+
+def test_account_id_retrievable(an_account):
+    an_account.create()
+    num_accts = opentxs.OTAPI_Wrap_GetAccountCount()
+    ids = [opentxs.OTAPI_Wrap_GetAccountWallet_ID(i) for i in range(num_accts)]
+    assert an_account._id in set(ids)
