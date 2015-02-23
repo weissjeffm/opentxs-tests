@@ -7,11 +7,12 @@ from pyopentxs import otme
 
 
 class Account:
-    def __init__(self, asset=None, nym=None, server_id=None, _id=None):
+    def __init__(self, asset=None, nym=None, server_id=None, name=None, _id=None):
         self.server_id = server_id or (asset and asset.server_id)
         self.nym = nym or Nym().register()
         self.asset = asset
         self._id = _id
+        self.name = name
 
     def create(self):
         if self._id:
@@ -22,14 +23,18 @@ class Account:
         # new message name
         if s.registeraccountresponse:
             self._id = s.registeraccountresponse['accountid']
-            return self
 
         # todo: old message name, remove in due time.
-        if s.createaccountresponse:
+        elif s.createaccountresponse:
             self._id = s.createaccountresponse['accountid']
-            return self
 
-        raise ReturnValueError("No account id present in response, account not created.")
+        else:
+            raise ReturnValueError("No account id present in response, account not created.")
+
+        # set the name if any
+        if self.name:
+            opentxs.OTAPI_Wrap_SetAccountWallet_Name(self._id, self.nym._id, self.name)
+        return self
 
     def delete(self):
         deleted = opentxs.OTAPI_Wrap_deleteAssetAccount(self.server_id, self.nym._id, self._id)
