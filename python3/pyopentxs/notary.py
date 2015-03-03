@@ -1,6 +1,6 @@
 import pyopentxs
 import opentxs
-from pyopentxs import nym, config_dir, decode, server
+from pyopentxs import nym, client_config_dir, notary_config_dir, decode, server
 from contextlib import closing
 from bs4 import BeautifulSoup
 import io
@@ -14,9 +14,9 @@ def make_server_contract(contract, server_nym):
     '''Takes a stream for a template contract, returns a tuple of
        (contract, cached_key, decoded_signed_contract)'''
     server_contract = server.add(server_nym._id, contract)
-    walletxml = decode(open(config_dir + "client_data/wallet.xml"))
+    walletxml = decode(open(client_config_dir + "client_data/wallet.xml"))
     cached_key = BeautifulSoup(walletxml).wallet.cachedkey.string.strip()
-    signed_contract_file = config_dir + "client_data/contracts/" + server_contract
+    signed_contract_file = client_config_dir + "client_data/contracts/" + server_contract
     with closing(open(signed_contract_file)) as f:
         signed_contract = f.read()
     decoded_signed_contract = decode(io.StringIO(signed_contract))
@@ -39,20 +39,20 @@ def setup(contract_stream, total_servers=1):
     server_contract_id, cached_key, decoded_signed_contract \
         = make_server_contract(contract, server_nym)
 
-    walletxml = decode(open(config_dir + "client_data/wallet.xml"))
+    walletxml = decode(open(client_config_dir + "client_data/wallet.xml"))
     cached_key = BeautifulSoup(walletxml).wallet.cachedkey.string.strip()
-    signed_contract_file = config_dir + "client_data/contracts/" + server_contract_id
+    signed_contract_file = client_config_dir + "client_data/contracts/" + server_contract_id
     with closing(open(signed_contract_file)) as f:
         signed_contract = f.read()
     decoded_signed_contract = decode(io.StringIO(signed_contract))
 
     # copy the credentials to the server
-    server_data_dir = config_dir + "server_data/"
+    server_data_dir = notary_config_dir + "server_data/"
     if not os.path.exists(server_data_dir):
         os.mkdir(server_data_dir)
-    shutil.copytree(config_dir + "client_data/credentials", server_data_dir + "credentials")
+    shutil.copytree(client_config_dir + "client_data/credentials", server_data_dir + "credentials")
     # remove the client-side data
-    shutil.rmtree(config_dir + "client_data")
+    shutil.rmtree(client_config_dir + "client_data")
 
     # reread the client data (empty)
     pyopentxs.init()
@@ -103,12 +103,12 @@ def restart():
 
 class Config:
     def __init__(self, filename=None):
-        self.filename = filename or pyopentxs.config_dir + "server.cfg"
+        self.filename = filename or notary_config_dir + "server.cfg"
 
     def read(self):
         '''Retrieves the server config file and parses it'''
         self.parser = configparser.ConfigParser()
-        self.parser.read(pyopentxs.config_dir + "server.cfg")
+        self.parser.read(notary_config_dir + "server.cfg")
         return self.parser
 
     def write(self):

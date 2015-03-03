@@ -1,14 +1,15 @@
 import opentxs
 from contextlib import closing
 import os
-import sys
-
+import time
 
 # OTME = OpenTransactions MadeEasy
 otme = opentxs.OT_ME()
 
 # The directory where OT stores its state
-config_dir = os.environ['HOME'] + "/.ot/"
+config_home = os.environ['HOME'] + "/.ot/" + str(time.time())
+client_config_dir = config_home + "/.ot/"
+notary_config_dir = os.environ['HOME'] + "/.ot/"
 
 
 class ReturnValueError(BaseException):
@@ -22,29 +23,15 @@ class ReturnValueError(BaseException):
         return "API function has returned error value %r" % self.return_value
 
 
-class ProcessUserCommand:
-    """
-    These return values are used by ProcessUserCommand() and bubble up
-    to different higher-level APIs. The return value is documented in
-    OTClient::ProcessUserCommand()
-    """
-    # TODO: currently unused. remove or use
+class DummyPassphraseCallback(opentxs.OTCallback):
+    def __init__(self, passphrase):
+        self.passphrase = passphrase
 
-    # error, don't send message
-    Error = 0               # error, don't send message
+    def runOne(self, pw):
+        pw.setPassword(self.passphrase)
 
-    # no error, no message sent
-    NoMessageSent = -1
-
-    # Paraphrasing the documentation
-    # message is sent, no request number returns > 0 for
-    # processInbox, containing the number that was there
-    # before processing -- FIXME unclear
-    MessageSent = 1
-
-    # This is sometimes returned by  OTClient::CalcReturnVal()
-    # Low-level networking error
-    RequestNumberMismatch = -2
+    def runTwo(self, pw):
+        pw.setPassword(self.passphrase)
 
 
 def decode(stream):
@@ -70,9 +57,9 @@ def _remove_pid():
     # There should not be a long-running opentxs client running anyway.
     # An existing PID file probably indicates a crashed process, not a running
     # instance
-    pid_file = os.path.expanduser("~/.ot/client_data/ot.pid")
+    pid_file = os.path.expanduser(client_config_dir + "client_data/ot.pid")
     if os.path.exists(pid_file):
-        print("removing lockfile %s" % pid_file, file=sys.stderr)
+        #print("removing lockfile %s" % pid_file, file=sys.stderr)
         os.remove(pid_file)
 
 
@@ -81,7 +68,14 @@ def init():
     Initialize the OTAPI in order to get a working state
     """
     # This should only be done once per process.
+    if not os.path.exists(client_config_dir):
+        os.makedirs(client_config_dir)
     _remove_pid()
+    opentxs.OTAPI_Wrap_SetHomeFolder(config_home)
+    caller = opentxs.OTCaller()
+    caller.setCallback(DummyPassphraseCallback("test"))
+    opentxs.OT_API_Set_PasswordCallback(caller)
+    opentxs.OTAPI_Wrap_Wallet_ChangePassphrase()
     opentxs.OTAPI_Wrap_AppInit()
     opentxs.OTAPI_Wrap_LoadWallet()
 
