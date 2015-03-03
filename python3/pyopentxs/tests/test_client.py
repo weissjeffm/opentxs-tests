@@ -4,7 +4,6 @@ import opentxs
 import time
 from bs4 import BeautifulSoup
 import io
-from pyopentxs.tests import data
 
 pytest.mark.usefixtures("setup_ot_config")
 
@@ -44,11 +43,14 @@ def make_contract(basefile, replacements):
         [{'factor': '1', 'decimal_power': '2'}, 10000, "BTC 10,000"],
         # [{'factor': '1', 'decimal_power': '2'}, -1, "BTC -1"], # fails "-BTC 1"
     ])
-def test_format_amount(attrs, number, expected_formatted):
+def test_format_parse_amount(attrs, number, expected_formatted):
+    '''Round-trips formatting and parsing of amounts'''
     contract_stream = make_contract("../test-data/sample-contracts/btc.xml", attrs)
     myasset = asset.Asset().issue(nym.Nym().register(), contract_stream)
     actual_formatted = opentxs.OTAPI_Wrap_FormatAmount(myasset._id, number)
     assert actual_formatted == expected_formatted
+    actual_number = opentxs.OTAPI_Wrap_StringToAmount(myasset._id, actual_formatted)
+    assert actual_number == number
 
 
 def test_get_time():
