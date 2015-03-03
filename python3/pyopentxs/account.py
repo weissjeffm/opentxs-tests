@@ -2,7 +2,6 @@ from pyopentxs import ReturnValueError
 from pyopentxs.nym import Nym
 import opentxs
 
-from bs4 import BeautifulSoup
 from pyopentxs import otme
 
 
@@ -19,17 +18,10 @@ class Account:
             raise ValueError("Can't create the same account twice,\
             to create an account of the same type, create a new Account object first.")
         account_xml = otme.create_asset_acct(self.server_id, self.nym._id, self.asset._id)
-        s = BeautifulSoup(account_xml)
-        # new message name
-        if s.registeraccountresponse:
-            self._id = s.registeraccountresponse['accountid']
+        if account_xml == "":
+            raise ReturnValueError("Empty response, account not created.")
 
-        # todo: old message name, remove in due time.
-        elif s.createaccountresponse:
-            self._id = s.createaccountresponse['accountid']
-
-        else:
-            raise ReturnValueError("No account id present in response, account not created.")
+        self._id = opentxs.OTAPI_Wrap_Message_GetNewAcctID(account_xml)
 
         # set the name if any
         if self.name:
