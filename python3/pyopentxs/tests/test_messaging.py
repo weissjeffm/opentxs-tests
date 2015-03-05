@@ -16,6 +16,10 @@ def test_basic_messaging(friends):
     alicemsg.send()
     bobinbox = messaging.get_all_mail(s1, bob)
     aliceoutbox = messaging.get_all_mail(s1, alice, outgoing=True)
+    messaging.verify_mail(bob, 0)
+    messaging.verify_mail(alice, 0, outgoing=True)
+    assert messaging.get_mail_notary_id(bob, 0) == s1
+    assert messaging.get_mail_notary_id(alice, 0, outgoing=True) == s1
     assert len(bobinbox) == 1
     assert len(aliceoutbox) == 1
     bobmsg = bobinbox[0]

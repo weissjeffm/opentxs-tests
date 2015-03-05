@@ -64,6 +64,18 @@ def delete_mail(nym, index, outgoing=False):
     assert remove(nym._id, index)
 
 
+def verify_mail(nym, index, outgoing=False):
+    verify = (opentxs.OTAPI_Wrap_Nym_VerifyOutmailByIndex if outgoing
+              else opentxs.OTAPI_Wrap_Nym_VerifyMailByIndex)
+    assert verify(nym._id, index)
+
+
+def get_mail_notary_id(nym, index, outgoing=False):
+    get_id = (opentxs.OTAPI_Wrap_GetNym_OutmailNotaryIDByIndex if outgoing
+              else opentxs.OTAPI_Wrap_GetNym_MailNotaryIDByIndex)
+    return get_id(nym._id, index)
+
+
 def delete_all_mail(nym, count=None, outgoing=False):
     for i in range(count or mail_count(nym, outgoing)):
         delete_mail(nym, i, outgoing)
