@@ -29,33 +29,49 @@ class Message:
                 self.to_nym == other.to_nym)
 
 
-def mail_count(nym):
-    return opentxs.OTAPI_Wrap_GetNym_MailCount(nym._id)
+def mail_count(nym, outgoing=False):
+    if outgoing:
+        return opentxs.OTAPI_Wrap_GetNym_OutmailCount(nym._id)
+    else:
+        return opentxs.OTAPI_Wrap_GetNym_MailCount(nym._id)
 
 
-def remote_mail_count(server_id, nym):
+def remote_mail_count(server_id, nym, outgoing=False):
     otme.retrieve_nym(server_id, nym._id, True)
-    return mail_count(nym)
+    return mail_count(nym, outgoing)
 
 
-def get_mail(server_id, nym, index):
-    content = opentxs.OTAPI_Wrap_GetNym_MailContentsByIndex(nym._id, index)
-    from_nym = Nym(server_id, opentxs.OTAPI_Wrap_GetNym_MailSenderIDByIndex(nym._id, index))
-    return Message(content, server_id=server_id, from_nym=from_nym, to_nym=nym)
+def get_mail(server_id, nym, index, outgoing=False):
+    (get_contents, get_other) = (
+        opentxs.OTAPI_Wrap_GetNym_OutmailContentsByIndex,
+        opentxs.OTAPI_Wrap_GetNym_OutmailRecipientIDByIndex
+    ) if outgoing else (
+        opentxs.OTAPI_Wrap_GetNym_MailContentsByIndex,
+        opentxs.OTAPI_Wrap_GetNym_MailSenderIDByIndex
+    )
+    content = get_contents(nym._id, index)
+    contact = Nym(server_id, get_other(nym._id, index))
+    return Message(
+        content,
+        server_id=server_id,
+        from_nym=nym if outgoing else contact,
+        to_nym=contact if outgoing else nym)
 
 
-def delete_mail(nym, index):
-    assert opentxs.OTAPI_Wrap_Nym_RemoveMailByIndex(nym._id, index)
+def delete_mail(nym, index, outgoing=False):
+    remove = (opentxs.OTAPI_Wrap_Nym_RemoveOutmailByIndex if outgoing
+              else opentxs.OTAPI_Wrap_Nym_RemoveMailByIndex)
+    assert remove(nym._id, index)
 
 
-def delete_all_mail(nym, count=None):
-    for i in range(count or mail_count(nym)):
-        delete_mail(nym, i)
+def delete_all_mail(nym, count=None, outgoing=False):
+    for i in range(count or mail_count(nym, outgoing)):
+        delete_mail(nym, i, outgoing)
 
 
-def get_all_mail(server_id, nym, delete_from_server=False):
-    count = remote_mail_count(server_id, nym)
-    messages = [get_mail(server_id, nym, index) for index in range(count)]
+def get_all_mail(server_id, nym, delete_from_server=False, outgoing=False):
+    count = remote_mail_count(server_id, nym, outgoing)
+    messages = [get_mail(server_id, nym, index, outgoing) for index in range(count)]
     if delete_from_server:
-        delete_all_mail(nym, count)
+        delete_all_mail(nym, count, outgoing)
     return messages

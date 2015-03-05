@@ -15,11 +15,16 @@ def test_basic_messaging(friends):
     assert messaging.remote_mail_count(s1, bob) == 0
     alicemsg.send()
     bobinbox = messaging.get_all_mail(s1, bob)
+    aliceoutbox = messaging.get_all_mail(s1, alice, outgoing=True)
     assert len(bobinbox) == 1
+    assert len(aliceoutbox) == 1
     bobmsg = bobinbox[0]
-    assert bobmsg == alicemsg
+    aliceoutboxmsg = aliceoutbox[0]
+    assert bobmsg == alicemsg and bobmsg == aliceoutboxmsg
     messaging.delete_all_mail(bob)
     assert messaging.mail_count(bob) == 0
+    messaging.delete_all_mail(alice, outgoing=True)
+    assert messaging.mail_count(alice, outgoing=True) == 0
 
 
 @pytest.mark.parametrize("content",
